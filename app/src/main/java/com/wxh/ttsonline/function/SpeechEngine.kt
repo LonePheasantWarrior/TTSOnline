@@ -82,7 +82,7 @@ class SpeechEngine(private val context: Context) {
     /**
      * 初始化引擎实例
      */
-    fun initEngine(appId: String, token: String, speakerType: String?) {
+    fun initEngine(appId: String, token: String, speakerType: String) {
         //创建全局引擎实例
         createEngine()
         if (engine == null) {
@@ -90,11 +90,7 @@ class SpeechEngine(private val context: Context) {
             Toast.makeText(context, "引擎创建失败", Toast.LENGTH_SHORT).show()
             return
         }
-        startEnginePayload = if (speakerType != null) {
-            StartEnginePayloadBuilder().setSpeaker(speakerType).build();
-        }else {
-            StartEnginePayloadBuilder().build();
-        }
+        startEnginePayload = StartEnginePayloadBuilder().setSpeaker(speakerType).build()
 
         //初始化引擎参数
         //引擎名称

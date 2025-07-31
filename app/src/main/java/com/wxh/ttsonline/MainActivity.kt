@@ -219,7 +219,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             // 调用 SpeechEngine.initEngine 函数
-            speechEngine.initEngine(appId, token, selectedSpeakerType)
+            speechEngine.initEngine(appId, token, selectedSpeakerType!!)
             Toast.makeText(this, "设置已保存", Toast.LENGTH_SHORT).show()
         }
 
