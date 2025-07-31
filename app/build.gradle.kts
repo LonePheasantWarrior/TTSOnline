@@ -21,7 +21,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -56,4 +56,8 @@ dependencies {
         exclude(group = "com.bytedance.common", module = "wschannel")
     }
     implementation(libs.ttnet)
+    implementation(libs.speechengine.tob)
+    
+    // JSON序列化
+    implementation(libs.gson)
 }

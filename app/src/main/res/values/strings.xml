@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">TTSOnline</string>
+    <string name="app_title">火山引擎语音合成TTS</string>
+    <string name="input_app_id">语音合成服务App ID</string>
+    <string name="input_token">语音合成服务Token</string>
+    <string name="select_voice_item">选择声音:</string>
+    <string name="input_text_for_speak">输入要合成的文本</string>
+    <string name="button_speak">朗读</string>
+    <string name="save_settings">保存设置</string>
 </resources>
