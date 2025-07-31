@@ -1,5 +1,6 @@
 package com.wxh.ttsonline
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -15,6 +16,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.wxh.ttsonline.configuration.TTSApplication
 import com.wxh.ttsonline.function.SpeechEngine
 import com.wxh.ttsonline.function.SpeechService
+import androidx.core.content.edit
 
 class MainActivity : AppCompatActivity() {
     private val speechEngine: SpeechEngine
@@ -39,6 +41,9 @@ class MainActivity : AppCompatActivity() {
     private var filteredSpeakerList: List<String> = emptyList()
     private var speakerTypeMap: Map<String, String> = emptyMap()
 
+    // 定义SharedPreferences
+    private lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -50,11 +55,17 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        // 初始化SharedPreferences
+        sharedPreferences = getSharedPreferences("TTSOnlineSettings", MODE_PRIVATE)
+
         // 初始化界面元素
         initViews()
 
         // 设置 spinner 适配器
         setupSpinner()
+
+        // 从SharedPreferences加载设置
+        loadSettings()
 
         // 设置按钮点击事件
         setupButtonListeners()
@@ -177,6 +188,41 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 保存设置到SharedPreferences
+    private fun saveSettings(appId: String, token: String) {
+        sharedPreferences.edit {
+            putString("appId", appId)
+            putString("token", token)
+            putString("selectedScene", selectedScene)
+            putString("selectedSpeakerType", selectedSpeakerType)
+        }
+    }
+
+    // 从SharedPreferences加载设置
+    private fun loadSettings() {
+        val appId = sharedPreferences.getString("appId", "")
+        val token = sharedPreferences.getString("token", "")
+        selectedScene = sharedPreferences.getString("selectedScene", selectedScene)
+        selectedSpeakerType = sharedPreferences.getString("selectedSpeakerType", selectedSpeakerType)
+
+        // 设置输入框的值
+        appIdInput.setText(appId)
+        tokenInput.setText(token)
+
+        // 如果加载了场景，需要更新声音列表
+        if (selectedScene != null) {
+            val sceneCategories = resources.getStringArray(R.array.scene_categories)
+            val scenePosition = sceneCategories.indexOf(selectedScene)
+            if (scenePosition >= 0) {
+                sceneSpinner.setSelection(scenePosition)
+                // 延迟更新speakerSpinner，确保场景已设置
+                sceneSpinner.post {
+                    filterSpeakerListByScene(selectedScene)
+                }
+            }
+        }
+    }
+
     private fun filterSpeakerListByScene(scene: String?): List<String> {
         filteredSpeakerList = if (scene.isNullOrEmpty()) {
             speakerList.map { it.split('|')[2] }
@@ -208,15 +254,18 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupButtonListeners() {
         // 保存设置按钮
-        saveSettingsButton.setOnClickListener {
+        saveSettingsButton.setOnClickListener { 
             val appId = appIdInput.text.toString().trim()
             val token = tokenInput.text.toString().trim()
 
             // 验证输入
-            if (appId.isEmpty() || token.isEmpty() || selectedSpeakerType.isNullOrEmpty()) {
+            if (appId.isEmpty() || token.isEmpty() || selectedSpeakerType.isNullOrEmpty() || selectedScene.isNullOrEmpty()) {
                 Toast.makeText(this, "设置内容不完整", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            // 保存设置到SharedPreferences
+            saveSettings(appId, token)
 
             // 调用 SpeechEngine.initEngine 函数
             speechEngine.initEngine(appId, token, selectedSpeakerType!!)

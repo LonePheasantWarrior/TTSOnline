@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">TTSOnline</string>
-    <string name="app_title">火山引擎语音合成TTS</string>
+    <string name="app_title">火山引擎语音合成</string>
     <string name="input_app_id">语音合成服务App ID</string>
     <string name="input_token">语音合成服务Token</string>
     <string name="select_voice_scene">场景:</string>
