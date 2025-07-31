@@ -58,8 +58,6 @@ class SpeechEngine(private val context: Context) {
      * 创建引擎实例
      */
     private fun createEngine(): SpeechEngine? {
-        destroy()
-
         engine = SpeechEngineGenerator.getInstance()
         if (engine == null) {
             return null
@@ -75,6 +73,7 @@ class SpeechEngine(private val context: Context) {
         isInitialized = false
         if (engine != null) {
             engine!!.destroyEngine()
+            Log.i(LogTag.SDK_INFO, "历史语音合成引擎实例已经销毁")
         }
         engine = null
     }
@@ -84,7 +83,9 @@ class SpeechEngine(private val context: Context) {
      */
     fun initEngine(appId: String, token: String, speakerType: String) {
         //创建全局引擎实例
-        createEngine()
+        if (engine == null) {
+            createEngine()
+        }
         if (engine == null) {
             Log.e(LogTag.SDK_ERROR, "语音合成引擎实例创建失败")
             Toast.makeText(context, "引擎创建失败", Toast.LENGTH_SHORT).show()
@@ -95,7 +96,7 @@ class SpeechEngine(private val context: Context) {
         //初始化引擎参数
         //引擎名称
         engine!!.setOptionString(
-            Dictionary.SpeechEngine.ENGINE_NAME, SpeechEngineDefines.BITTS_ENGINE
+            SpeechEngineDefines.PARAMS_KEY_ENGINE_NAME_STRING, SpeechEngineDefines.BITTS_ENGINE
         )
         //鉴权相关：AppId
         engine!!.setOptionString(SpeechEngineDefines.PARAMS_KEY_APP_ID_STRING, appId)
@@ -117,6 +118,10 @@ class SpeechEngine(private val context: Context) {
         //语音合成服务StartSession时传入的音频相关参数，json字符串格式
         engine!!.setOptionString(
             SpeechEngineDefines.PARAMS_KEY_START_ENGINE_PAYLOAD_STRING, gson.toJson(startEnginePayload)
+        )
+        //启用播放器音频回调
+        engine!!.setOptionBoolean(
+            SpeechEngineDefines.PARAMS_KEY_ENABLE_PLAYER_AUDIO_CALLBACK_BOOL, false
         )
 
         //初始化引擎实例
