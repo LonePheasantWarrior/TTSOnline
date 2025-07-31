@@ -5,7 +5,7 @@ package com.wxh.ttsonline.dto
  * 提供便捷的方法来设置TTS语音合成请求参数
  */
 class StartEnginePayloadBuilder {
-    private var speaker: String = "zh_female_qingxinnvsheng_mars_bigtts"
+    private var speaker: String = ""
     private var loudnessRate: Int = 0
     private var speechRate: Int = 0
 

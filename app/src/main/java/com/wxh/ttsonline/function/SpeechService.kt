@@ -105,6 +105,14 @@ class SpeechService(private val context: Context) :
         currentScene = Dictionary.SpeechServiceScene.REGULAR
         currentState = Dictionary.SpeechServiceState.PROCESSING
 
+        if (!speechEngine.isInitialized) {
+            lastErrorMsg = String.format("语音合成引擎未初始化")
+            Log.e(LogTag.SDK_ERROR, lastErrorMsg)
+            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            currentState = Dictionary.SpeechServiceState.ERROR
+            return false
+        }
+
         if (text.isNullOrBlank()) {
             currentState = Dictionary.SpeechServiceState.PENDING
             return true

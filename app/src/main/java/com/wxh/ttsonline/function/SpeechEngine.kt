@@ -25,7 +25,7 @@ class SpeechEngine(private val context: Context) {
     /**
      * 语音合成引擎是否已初始化完毕
      */
-    private var isInitialized: Boolean = false
+    var isInitialized: Boolean = false
 
     /**
      * 语音合成参数
@@ -101,7 +101,7 @@ class SpeechEngine(private val context: Context) {
         engine!!.setOptionString(
             Dictionary.SpeechEngine.ENGINE_NAME, SpeechEngineDefines.BITTS_ENGINE
         )
-        //鉴权相关：Appid
+        //鉴权相关：AppId
         engine!!.setOptionString(SpeechEngineDefines.PARAMS_KEY_APP_ID_STRING, appId)
         //鉴权相关：Token
         engine!!.setOptionString(SpeechEngineDefines.PARAMS_KEY_APP_TOKEN_STRING, token)
