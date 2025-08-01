@@ -119,9 +119,9 @@ class SpeechEngine(private val context: Context) {
         engine!!.setOptionString(
             SpeechEngineDefines.PARAMS_KEY_START_ENGINE_PAYLOAD_STRING, gson.toJson(startEnginePayload)
         )
-        //启用播放器音频回调
+        //是否启用TTS播放.不启用,以便使用自定义播放方式
         engine!!.setOptionBoolean(
-            SpeechEngineDefines.PARAMS_KEY_ENABLE_PLAYER_AUDIO_CALLBACK_BOOL, false
+            SpeechEngineDefines.PARAMS_KEY_TTS_ENABLE_PLAYER_BOOL, false
         )
 
         //初始化引擎实例
