@@ -15,6 +15,7 @@ import com.wxh.ttsonline.configuration.LogTag
 import com.wxh.ttsonline.configuration.TTSApplication
 import com.wxh.ttsonline.dto.StartEnginePayload
 import com.wxh.ttsonline.dto.TaskEnginePayload
+import java.io.ByteArrayOutputStream
 
 class SpeechService(private val context: Context) :
     com.bytedance.speech.speechengine.SpeechEngine.SpeechListener {
@@ -52,6 +53,11 @@ class SpeechService(private val context: Context) :
      * 当前语音合成服务运行场景
      */
     var currentScene: String = Dictionary.SpeechServiceScene.REGULAR
+
+    /**
+     * 语音合成数据内容（通过回调分段载入）
+     */
+    var ttsDataArrayStream: ByteArrayOutputStream = ByteArrayOutputStream()
 
     /**
      * 语音合成指定文本内容
@@ -102,7 +108,6 @@ class SpeechService(private val context: Context) :
      * 语音合成
      */
     fun ttsInner(text: CharSequence?, loudnessRate: Int?, speechRate: Int?): Boolean {
-        currentScene = Dictionary.SpeechServiceScene.REGULAR
         currentState = Dictionary.SpeechServiceState.PROCESSING
 
         if (!speechEngine.isInitialized) {
@@ -331,23 +336,31 @@ class SpeechService(private val context: Context) :
                 LogTag.SDK_ERROR, "Callback: 错误信息: $stdData"
             )
 
-            SpeechEngineDefines.MESSAGE_TYPE_EVENT_TTS_SENTENCE_START -> Log.d(
-                LogTag.SDK_INFO, "Callback: TTS_SENTENCE_START: $stdData"
-            )
+            SpeechEngineDefines.MESSAGE_TYPE_EVENT_TTS_SENTENCE_START -> {
+                Log.d(LogTag.SDK_INFO, "Callback: TTS_SENTENCE_START: $stdData")
+                ttsDataArrayStream.reset()
+            }
 
-            SpeechEngineDefines.MESSAGE_TYPE_EVENT_TTS_SENTENCE_END -> Log.d(
-                LogTag.SDK_INFO, "Callback: TTS_SENTENCE_END: $stdData"
-            )
+            SpeechEngineDefines.MESSAGE_TYPE_EVENT_TTS_SENTENCE_END -> {
+                Log.d(LogTag.SDK_INFO, "Callback: TTS_SENTENCE_END: $stdData")
+                val ttsDataArray = ttsDataArrayStream.toByteArray();
+                if (Dictionary.SpeechServiceScene.DEMO == currentScene) {
+                    ttsCallback(ttsDataArray, ttsDataArray.size)
+                }else if (Dictionary.SpeechServiceScene.REGULAR == currentScene) {
+                    ttsCallbackForSys(ttsDataArray, ttsDataArray.size)
+                }else {
+                    throw RuntimeException("不受支持的语音合成工作场景")
+                }
+            }
 
-            SpeechEngineDefines.MESSAGE_TYPE_EVENT_TTS_RESPONSE -> Log.d(
-                LogTag.SDK_INFO, "Callback: TTS_RESPONSE: data len ${stdData.length}"
-            )
+            SpeechEngineDefines.MESSAGE_TYPE_EVENT_TTS_RESPONSE -> {
+                Log.d(LogTag.SDK_INFO, "Callback: TTS_RESPONSE: data len ${stdData.length}")
+                ttsDataArrayStream.write(data)
+            }
 
             SpeechEngineDefines.MESSAGE_TYPE_EVENT_TTS_ENDED -> Log.d(
                 LogTag.SDK_INFO, "Callback: TTSEnded: $stdData"
             )
-
-            SpeechEngineDefines.MESSAGE_TYPE_PLAYER_AUDIO_DATA -> Unit
 
             SpeechEngineDefines.MESSAGE_TYPE_PLAYER_START_PLAY_AUDIO -> Log.d(
                 LogTag.SDK_INFO, "Callback: 播放开始: $stdData"
@@ -357,7 +370,10 @@ class SpeechService(private val context: Context) :
                 LogTag.SDK_INFO, "Callback: 播放结束: $stdData"
             )
 
-            else -> Unit
+            else -> {
+                val warnMsg = String.format("未处理的语音合成回调: $type")
+                Log.i(LogTag.SDK_INFO, warnMsg)
+            }
         }
     }
 
