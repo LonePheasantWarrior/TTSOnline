@@ -2,71 +2,91 @@
 <resources>
     <!-- 音色列表数组 -->
     <array name="speaker_list">
-        <!-- 多情感场景音色 -->
-        <item>false|多情感|北京小爷|zh_male_beijingxiaoye_emo_v2_mars_bigtts</item>
-        <item>false|多情感|柔美女友|zh_female_roumeinvyou_emo_v2_mars_bigtts</item>
-        <item>false|多情感|阳光青年|zh_male_yangguangqingnian_emo_v2_mars_bigtts</item>
-        <item>false|多情感|魅力女友|zh_female_meilinvyou_emo_v2_mars_bigtts</item>
-        <item>false|多情感|爽快思思|zh_female_shuangkuaisisi_emo_v2_mars_bigtts</item>
-        <item>false|多情感|甜心小美|zh_female_tianxinxiaomei_emo_v2_mars_bigtts</item>
-        <item>false|多情感|高冷御姐|zh_female_gaolengyujie_emo_v2_mars_bigtts</item>
-        <item>false|多情感|傲娇霸总|zh_male_aojiaobazong_emo_v2_mars_bigtts</item>
-        <item>false|多情感|广州德哥|zh_male_guangzhoudege_emo_mars_bigtts</item>
-        <item>false|多情感|京腔侃爷|zh_male_jingqiangkanye_emo_mars_bigtts</item>
-        <item>false|多情感|邻居阿姨|zh_female_linjuayi_emo_v2_mars_bigtts</item>
-        <item>false|多情感|优柔公子|zh_male_yourougongzi_emo_v2_mars_bigtts</item>
-        <item>false|多情感|儒雅男友|zh_male_ruyayichen_emo_v2_mars_bigtts</item>
-        <item>false|多情感|俊朗男友|zh_male_junlangnanyou_emo_v2_mars_bigtts</item>
-        
-        <!-- 客服场景音色 -->
-        <item>false|客服场景|暖阳女声|zh_female_kefunvsheng_mars_bigtts</item>
-        
         <!-- 通用场景音色 -->
-        <item>false|通用场景|甜美桃子|zh_female_tianmeitaozi_mars_bigtts</item>
-        <item>false|通用场景|灿灿 / Shiny|zh_female_cancan_mars_bigtts</item>
-        <item>true|通用场景|清新女声|zh_female_qingxinnvsheng_mars_bigtts</item>
-        <item>false|通用场景|爽快思思 / Skye|zh_female_shuangkuaisisi_moon_bigtts</item>
-        <item>false|通用场景|温暖阿虎 / Alvin|zh_male_wennuanahu_moon_bigtts</item>
-        <item>false|通用场景|少年梓辛 / Brayan|zh_male_shaonianzixin_moon_bigtts</item>
-        <item>false|通用场景|知性女声|zh_female_zhixingnvsheng_mars_bigtts</item>
-        <item>false|通用场景|清爽男大|zh_male_qingshuangnanda_mars_bigtts</item>
-        <item>false|通用场景|邻家女孩|zh_female_linjianvhai_moon_bigtts</item>
-        <item>false|通用场景|渊博小叔|zh_male_yuanboxiaoshu_moon_bigtts</item>
-        <item>false|通用场景|阳光青年|zh_male_yangguangqingnian_moon_bigtts</item>
-        <item>false|通用场景|甜美小源|zh_female_tianmeixiaoyuan_moon_bigtts</item>
-        <item>false|通用场景|清澈梓梓|zh_female_qingchezizi_moon_bigtts</item>
-        <item>false|通用场景|解说小明|zh_male_jieshuoxiaoming_moon_bigtts</item>
-        <item>false|通用场景|开朗姐姐|zh_female_kailangjiejie_moon_bigtts</item>
-        <item>false|通用场景|邻家男孩|zh_male_linjiananhai_moon_bigtts</item>
-        <item>false|通用场景|甜美悦悦|zh_female_tianmeiyueyue_moon_bigtts</item>
-        <item>false|通用场景|心灵鸡汤|zh_female_xinlingjitang_moon_bigtts</item>
-        <item>false|通用场景|知性温婉|ICL_zh_female_zhixingwenwan_tob</item>
-        <item>false|通用场景|暖心体贴|ICL_zh_male_nuanxintitie_tob</item>
-        <item>false|通用场景|温柔文雅|ICL_zh_female_wenrouwenya_tob</item>
-        <item>false|通用场景|开朗轻快|ICL_zh_male_kailangqingkuai_tob</item>
-        <item>false|通用场景|活泼爽朗|ICL_zh_male_huoposhuanglang_tob</item>
-        <item>false|通用场景|率真小伙|ICL_zh_male_shuaizhenxiaohuo_tob</item>
-        <item>false|通用场景|温柔小哥|zh_male_wenrouxiaoge_mars_bigtts</item>
-        <item>false|通用场景|亲切女声|zh_female_qinqienvsheng_moon_bigtts</item>
-        <item>false|通用场景|机灵小伙|ICL_zh_male_shenmi_v1_tob</item>
-        <item>false|通用场景|元气甜妹|ICL_zh_female_wuxi_tob</item>
-        <item>false|通用场景|知心姐姐|ICL_zh_female_wenyinvsheng_v1_tob</item>
-        <item>false|通用场景|阳光阿辰|zh_male_qingyiyuxuan_mars_bigtts</item>
-        <item>false|通用场景|快乐小东|zh_male_xudong_conversation_wvae_bigtts</item>
-        <item>false|通用场景|冷酷哥哥|ICL_zh_male_lengkugege_v1_tob</item>
-        <item>false|通用场景|纯澈女生|ICL_zh_female_feicui_v1_tob</item>
-        <item>false|通用场景|初恋女友|ICL_zh_female_yuxin_v1_tob</item>
-        <item>false|通用场景|贴心闺蜜|ICL_zh_female_xnx_tob</item>
-        <item>false|通用场景|温柔白月光|ICL_zh_female_yry_tob</item>
-        <item>false|通用场景|开朗学长|en_male_jason_conversation_wvae_bigtts</item>
-        <item>false|通用场景|魅力苏菲|zh_female_sophie_conversation_wvae_bigtts</item>
-        <item>false|通用场景|贴心妹妹|ICL_zh_female_yilin_tob</item>
+        <item>false|通用场景|灿灿 2.0|BV700_V2_streaming</item>
+        <item>false|通用场景|炀炀|BV705_streaming</item>
+        <item>false|通用场景|擎苍 2.0|BV701_V2_streaming</item>
+        <item>true|通用场景|通用女声 2.0|BV001_V2_streaming</item>
+        <item>false|通用场景|灿灿|BV700_streaming</item>
+        <item>false|通用场景|超自然音色-梓梓2.0|BV406_V2_streaming</item>
+        <item>false|通用场景|超自然音色-梓梓|BV406_streaming</item>
+        <item>false|通用场景|超自然音色-燃燃2.0|BV407_V2_streaming</item>
+        <item>false|通用场景|超自然音色-燃燃|BV407_streaming</item>
+        <item>false|通用场景|通用女声|BV001_streaming</item>
+        <item>false|通用场景|通用男声|BV002_streaming</item>
+
+        <!-- 有声阅读音色 -->
+        <item>false|有声阅读|擎苍|BV701_streaming</item>
+        <item>false|有声阅读|阳光青年|BV123_streaming</item>
+        <item>false|有声阅读|反卷青年|BV120_streaming</item>
+        <item>false|有声阅读|通用赘婿|BV119_streaming</item>
+        <item>false|有声阅读|古风少御|BV115_streaming</item>
+        <item>false|有声阅读|霸气青叔|BV107_streaming</item>
+        <item>false|有声阅读|质朴青年|BV100_streaming</item>
+        <item>false|有声阅读|温柔淑女|BV104_streaming</item>
+        <item>false|有声阅读|开朗青年|BV004_streaming</item>
+        <item>false|有声阅读|甜宠少御|BV113_streaming</item>
+        <item>false|有声阅读|儒雅青年|BV102_streaming</item>
+
+        <!-- 智能助手音色 -->
+        <item>false|智能助手|甜美小源|BV405_streaming</item>
+        <item>false|智能助手|亲切女声|BV007_streaming</item>
+        <item>false|智能助手|知性女声|BV009_streaming</item>
+        <item>false|智能助手|诚诚|BV419_streaming</item>
+        <item>false|智能助手|童童|BV415_streaming</item>
+        <item>false|智能助手|亲切男声|BV008_streaming</item>
+
+        <!-- 视频配音音色 -->
+        <item>false|视频配音|译制片男声|BV408_streaming</item>
+        <item>false|视频配音|懒小羊|BV426_streaming</item>
+        <item>false|视频配音|清新文艺女声|BV428_streaming</item>
+        <item>false|视频配音|鸡汤女声|BV403_streaming</item>
+        <item>false|视频配音|智慧老者|BV158_streaming</item>
+        <item>false|视频配音|慈爱姥姥|BV157_streaming</item>
+        <item>false|视频配音|说唱小哥|BR001_streaming</item>
+        <item>false|视频配音|活力解说男|BV410_streaming</item>
+        <item>false|视频配音|影视解说小帅|BV411_streaming</item>
+        <item>false|视频配音|解说小帅-多情感|BV437_streaming</item>
+        <item>false|视频配音|影视解说小美|BV412_streaming</item>
+        <item>false|视频配音|纨绔青年|BV159_streaming</item>
+        <item>false|视频配音|直播一姐|BV418_streaming</item>
+        <item>false|视频配音|反卷青年|BV120_streaming</item>
+        <item>false|视频配音|沉稳解说男|BV142_streaming</item>
+        <item>false|视频配音|潇洒青年|BV143_streaming</item>
+        <item>false|视频配音|阳光男声|BV056_streaming</item>
+        <item>false|视频配音|活泼女声|BV005_streaming</item>
+        <item>false|视频配音|小萝莉|BV064_streaming</item>
+
+        <!-- 特色音色 -->
+        <item>false|特色音色|奶气萌娃|BV051_streaming</item>
+        <item>false|特色音色|动漫海绵|BV063_streaming</item>
+        <item>false|特色音色|动漫海星|BV417_streaming</item>
+        <item>false|特色音色|动漫小新|BV050_streaming</item>
+        <item>false|特色音色|天才童声|BV061_streaming</item>
+
+        <!-- 广告配音音色 -->
+        <item>false|广告配音|促销男声|BV401_streaming</item>
+        <item>false|广告配音|促销女声|BV402_streaming</item>
+        <item>false|广告配音|磁性男声|BV006_streaming</item>
+
+        <!-- 新闻播报音色 -->
+        <item>false|新闻播报|新闻女声|BV011_streaming</item>
+        <item>false|新闻播报|新闻男声|BV012_streaming</item>
+
+        <!-- 教育场景音色 -->
+        <item>false|教育场景|知性姐姐-双语|BV034_streaming</item>
+        <item>false|教育场景|温柔小哥|BV033_streaming</item>
     </array>
-    
+
     <!-- 场景分类数组 -->
     <array name="scene_categories">
-        <item>多情感</item>
-        <item>客服场景</item>
         <item>通用场景</item>
+        <item>有声阅读</item>
+        <item>智能助手</item>
+        <item>视频配音</item>
+        <item>特色音色</item>
+        <item>广告配音</item>
+        <item>新闻播报</item>
+        <item>教育场景</item>
     </array>
 </resources>
