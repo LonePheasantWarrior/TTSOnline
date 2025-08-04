@@ -123,6 +123,10 @@ class SpeechEngine(private val context: Context) {
         engine!!.setOptionBoolean(
             SpeechEngineDefines.PARAMS_KEY_TTS_ENABLE_PLAYER_BOOL, false
         )
+        //是否启用播放器音频回掉
+        engine!!.setOptionBoolean(
+            SpeechEngineDefines.PARAMS_KEY_ENABLE_PLAYER_AUDIO_CALLBACK_BOOL, false
+        )
 
         //初始化引擎实例
         val initRes = engine!!.initEngine()
