@@ -95,13 +95,8 @@ class Dictionary {
          */
         val SUPPORTED_LANGUAGES = listOf(
             Triple("zh", "CN", null),    // 汉语（简体中文）
-            Triple("en", "US", null),    // 英语（美国）
-            Triple("ja", "JP", null),    // 日语
-            Triple("ko", "KR", null),    // 韩语
-            Triple("ru", "RU", null),    // 俄语
-            Triple("de", "DE", null),    // 德语
-            Triple("fr", "FR", null),    // 法语
-            Triple("hi", "IN", null)     // 印度语
+            Triple("zh", "TW", null),    // 汉语（繁体中文-台湾）
+            Triple("zh", "HK", null),    // 汉语（繁体中文-香港）
         )
     }
 }
