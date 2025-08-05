@@ -65,10 +65,10 @@ class TTSService : TextToSpeechService() {
         }
     }
 
-    override fun onGetVoices(): MutableList<android.speech.tts.Voice>? {
+        override fun onGetVoices(): MutableList<android.speech.tts.Voice>? {
         // 返回支持的语音列表
         val voices = mutableListOf<android.speech.tts.Voice>()
-
+ 
         Dictionary.SpeechEngine.SUPPORTED_LANGUAGES.forEach { (lang, country, _) ->
             val locale = java.util.Locale.Builder().setLanguage(lang).setRegion(country).build()
             val voice = android.speech.tts.Voice(
@@ -76,11 +76,13 @@ class TTSService : TextToSpeechService() {
                 locale,
                 android.speech.tts.Voice.QUALITY_NORMAL,
                 android.speech.tts.Voice.LATENCY_NORMAL,
-                false, // requiresNetwork
-                setOf() // features
+                true, // requiresNetwork - 我们的TTS引擎需要网络
+                setOf("android.speech.tts.FEATURE_NETWORK_SYNTHESIS") // features
             )
             voices.add(voice)
         }
         return voices
     }
+
+
 }
