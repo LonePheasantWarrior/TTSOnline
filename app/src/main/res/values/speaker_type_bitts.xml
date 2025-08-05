@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 音色列表数组 -->
-    <array name="speaker_list">
+    <array name="speaker_list_bittts">
         <!-- 多情感场景音色 -->
         <item>false|多情感|北京小爷|zh_male_beijingxiaoye_emo_v2_mars_bigtts</item>
         <item>false|多情感|柔美女友|zh_female_roumeinvyou_emo_v2_mars_bigtts</item>
@@ -64,7 +64,7 @@
     </array>
 
     <!-- 场景分类数组 -->
-    <array name="scene_categories">
+    <array name="scene_categories_bitts">
         <item>多情感</item>
         <item>客服场景</item>
         <item>通用场景</item>

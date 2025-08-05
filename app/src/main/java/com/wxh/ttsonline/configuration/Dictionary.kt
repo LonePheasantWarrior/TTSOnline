@@ -4,6 +4,16 @@ package com.wxh.ttsonline.configuration
  * 全局字典类
  */
 class Dictionary {
+    /**
+     * 配置项
+     */
+    object PreferenceKey {
+        const val APP_ID = "appId"
+        const val TOKEN = "token"
+        const val SELECTED_SCENE = "selectedScene"
+        const val SELECTED_SPEAKER_TYPE = "selectedSpeakerType"
+    }
+
 
     /**
      * 语音合成服务状态
@@ -62,7 +72,12 @@ class Dictionary {
         /**
          * 语音合成服务接口地址
          */
-        const val API_PATH = "/api/v3/tts/bidirection"
+        const val TTS_URL = "/api/v1/tts/ws_binary"
+
+        /**
+         * 语音合成服务Cluster ID
+         */
+        const val CLUSTER = "volcano_tts"
 
         /**
          * 语音合成服务资源ID

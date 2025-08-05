@@ -1,8 +1,10 @@
 package com.wxh.ttsonline.configuration
 
 import android.app.Application
+import android.content.SharedPreferences
 import android.util.Log
 import com.bytedance.speech.speechengine.SpeechEngineGenerator
+import com.wxh.ttsonline.function.AudioPlayer
 import com.wxh.ttsonline.function.SpeechEngine
 import com.wxh.ttsonline.function.SpeechService
 
@@ -12,6 +14,7 @@ import com.wxh.ttsonline.function.SpeechService
 class TTSApplication : Application() {
     lateinit var speechEngine: SpeechEngine private set
     lateinit var speechService: SpeechService private set
+    lateinit var audioPlayer: AudioPlayer private set
 
     override fun onCreate() {
         super.onCreate()
@@ -25,5 +28,7 @@ class TTSApplication : Application() {
         Log.i(LogTag.COMMON_INFO, "本地引擎已初始化")
         speechService = SpeechService(this)
         Log.i(LogTag.COMMON_INFO, "本地引擎服务已初始化")
+        audioPlayer = AudioPlayer()
+        Log.i(LogTag.COMMON_INFO, "默认播放器已初始化")
     }
 }

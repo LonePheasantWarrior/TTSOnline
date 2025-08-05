@@ -191,19 +191,19 @@ class MainActivity : AppCompatActivity() {
     // 保存设置到SharedPreferences
     private fun saveSettings(appId: String, token: String) {
         sharedPreferences.edit {
-            putString("appId", appId)
-            putString("token", token)
-            putString("selectedScene", selectedScene)
-            putString("selectedSpeakerType", selectedSpeakerType)
+            putString(com.wxh.ttsonline.configuration.Dictionary.PreferenceKey.APP_ID, appId)
+            putString(com.wxh.ttsonline.configuration.Dictionary.PreferenceKey.TOKEN, token)
+            putString(com.wxh.ttsonline.configuration.Dictionary.PreferenceKey.SELECTED_SCENE, selectedScene)
+            putString(com.wxh.ttsonline.configuration.Dictionary.PreferenceKey.SELECTED_SPEAKER_TYPE, selectedSpeakerType)
         }
     }
 
     // 从SharedPreferences加载设置
     private fun loadSettings() {
         val appId = sharedPreferences.getString("appId", "")
-        val token = sharedPreferences.getString("token", "")
-        selectedScene = sharedPreferences.getString("selectedScene", selectedScene)
-        selectedSpeakerType = sharedPreferences.getString("selectedSpeakerType", selectedSpeakerType)
+        val token = sharedPreferences.getString(com.wxh.ttsonline.configuration.Dictionary.PreferenceKey.TOKEN, "")
+        selectedScene = sharedPreferences.getString(com.wxh.ttsonline.configuration.Dictionary.PreferenceKey.SELECTED_SCENE, selectedScene)
+        selectedSpeakerType = sharedPreferences.getString(com.wxh.ttsonline.configuration.Dictionary.PreferenceKey.SELECTED_SPEAKER_TYPE, selectedSpeakerType)
 
         // 设置输入框的值
         appIdInput.setText(appId)
@@ -266,9 +266,6 @@ class MainActivity : AppCompatActivity() {
 
             // 保存设置到SharedPreferences
             saveSettings(appId, token)
-
-            // 调用 SpeechEngine.initEngine 函数
-            speechEngine.initEngine(appId, token, selectedSpeakerType!!)
             Toast.makeText(this, "设置已保存", Toast.LENGTH_SHORT).show()
         }
 
