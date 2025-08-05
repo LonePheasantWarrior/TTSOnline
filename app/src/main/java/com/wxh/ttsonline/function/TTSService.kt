@@ -15,7 +15,8 @@ class TTSService : TextToSpeechService() {
         get() = (applicationContext as TTSApplication).speechService
 
     override fun onGetLanguage(): Array<out String?>? {
-        return Dictionary.SpeechEngine.SUPPORTED_LANGUAGES.map { it.first }.distinct().toTypedArray()
+        return Dictionary.SpeechEngine.SUPPORTED_LANGUAGES.map { it.first }.distinct()
+            .toTypedArray()
     }
 
     override fun onIsLanguageAvailable(
@@ -23,9 +24,11 @@ class TTSService : TextToSpeechService() {
     ): Int {
         if (lang == null) return TextToSpeech.LANG_NOT_SUPPORTED
         val match = Dictionary.SpeechEngine.SUPPORTED_LANGUAGES.find {
-            it.first.equals(lang, ignoreCase = true) &&
-            (country == null || it.second.equals(country, ignoreCase = true)) &&
-            (variant == null)
+            it.first.equals(
+                lang, ignoreCase = true
+            ) && (country == null || it.second.equals(
+                country, ignoreCase = true
+            )) && (variant == null)
         }
         return when {
             match != null && country != null && variant != null -> TextToSpeech.LANG_COUNTRY_VAR_AVAILABLE
@@ -51,22 +54,23 @@ class TTSService : TextToSpeechService() {
         speechService.tts(request, callback)
     }
 
-    // 注意：某些方法在较新的Android版本中可能不可用
-    // 我们只实现必要的方法来确保TTS引擎能够正常工作
-    override fun onGetDefaultVoiceNameFor(lang: String?, country: String?, variant: String?): String? {
-        // 返回默认语音名称
-        return "zh-CN"
+    // 返回默认语音名称
+    override fun onGetDefaultVoiceNameFor(
+        lang: String?, country: String?, variant: String?
+    ): String? {
+        return when (lang) {
+            "zh", "zh-CN" -> "TTSOnline_zh_CN"
+            "en" -> "TTSOnline_en_US"
+            else -> "TTSOnline_zh_CN"
+        }
     }
 
     override fun onGetVoices(): MutableList<android.speech.tts.Voice>? {
         // 返回支持的语音列表
         val voices = mutableListOf<android.speech.tts.Voice>()
-        
+
         Dictionary.SpeechEngine.SUPPORTED_LANGUAGES.forEach { (lang, country, _) ->
-            val locale = java.util.Locale.Builder()
-                .setLanguage(lang)
-                .setRegion(country)
-                .build()
+            val locale = java.util.Locale.Builder().setLanguage(lang).setRegion(country).build()
             val voice = android.speech.tts.Voice(
                 "TTSOnline_${lang}_${country}",
                 locale,
@@ -79,7 +83,4 @@ class TTSService : TextToSpeechService() {
         }
         return voices
     }
-
-
-
 }
