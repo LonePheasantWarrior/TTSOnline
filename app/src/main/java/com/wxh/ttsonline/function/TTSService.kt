@@ -53,7 +53,6 @@ class TTSService : TextToSpeechService() {
 
     // 注意：某些方法在较新的Android版本中可能不可用
     // 我们只实现必要的方法来确保TTS引擎能够正常工作
-
     override fun onGetDefaultVoiceNameFor(lang: String?, country: String?, variant: String?): String? {
         // 返回默认语音名称
         return "zh-CN"
@@ -63,14 +62,13 @@ class TTSService : TextToSpeechService() {
         // 返回支持的语音列表
         val voices = mutableListOf<android.speech.tts.Voice>()
         
-        Dictionary.SpeechEngine.SUPPORTED_LANGUAGES.forEach { (lang, country, variant) ->
-            val locale = when {
-                country != null -> java.util.Locale(lang, country)
-                else -> java.util.Locale(lang)
-            }
-            
+        Dictionary.SpeechEngine.SUPPORTED_LANGUAGES.forEach { (lang, country, _) ->
+            val locale = java.util.Locale.Builder()
+                .setLanguage(lang)
+                .setRegion(country)
+                .build()
             val voice = android.speech.tts.Voice(
-                "TTSOnline_${lang}_${country ?: "default"}",
+                "TTSOnline_${lang}_${country}",
                 locale,
                 android.speech.tts.Voice.QUALITY_NORMAL,
                 android.speech.tts.Voice.LATENCY_NORMAL,
@@ -79,7 +77,6 @@ class TTSService : TextToSpeechService() {
             )
             voices.add(voice)
         }
-        
         return voices
     }
 
