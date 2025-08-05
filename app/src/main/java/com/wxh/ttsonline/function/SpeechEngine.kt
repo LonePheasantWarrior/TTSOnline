@@ -76,7 +76,8 @@ class SpeechEngine(private val context: Context) {
         text: String,
         pitchRatio: Double?,
         volumeRatio: Double?,
-        speedRatio: Double?
+        speedRatio: Double?,
+        isEnablePlayer: Boolean
     ) {
         if (text.isBlank()) {
             Log.w(LogTag.SPEECH_ERROR, "待处理文本内容为空,使用默认内容")
@@ -135,14 +136,16 @@ class SpeechEngine(private val context: Context) {
         )
         //语音合成 SDK 默认使用内置的播放器播放合成的音频，如果开发者希望使用其他播放器，可以通过以下配置项禁用内置播放器
         engine!!.setOptionBoolean(
-            SpeechEngineDefines.PARAMS_KEY_TTS_ENABLE_PLAYER_BOOL, false
+            SpeechEngineDefines.PARAMS_KEY_TTS_ENABLE_PLAYER_BOOL, isEnablePlayer
         )
-        //语音合成 SDK 支持返回合成出来的音频数据，可以通过监听回调MESSAGE_TYPE_TTS_AUDIO_DATA来拿到PCM格式的音频流
-        //默认关闭，需要配置以下参数开启
-        engine!!.setOptionInt(
-            SpeechEngineDefines.PARAMS_KEY_TTS_DATA_CALLBACK_MODE_INT,
-            SpeechEngineDefines.TTS_DATA_CALLBACK_MODE_ALL
-        )
+        if (!isEnablePlayer) {
+            //语音合成 SDK 支持返回合成出来的音频数据，可以通过监听回调MESSAGE_TYPE_TTS_AUDIO_DATA来拿到PCM格式的音频流
+            //默认关闭，需要配置以下参数开启
+            engine!!.setOptionInt(
+                SpeechEngineDefines.PARAMS_KEY_TTS_DATA_CALLBACK_MODE_INT,
+                SpeechEngineDefines.TTS_DATA_CALLBACK_MODE_ALL
+            )
+        }
         //语音合成 SDK 提供了两种合成场景
         //单次合成场景 TTS_SCENARIO_TYPE_NORMAL：又称单句场景，引擎每次启动，只合成、播放一段文本的；
         //连续合成场景 TTS_SCENARIO_TYPE_NOVEL：适用于听书业务，每次启动引擎后可以根据需求合成、播放多段文本；

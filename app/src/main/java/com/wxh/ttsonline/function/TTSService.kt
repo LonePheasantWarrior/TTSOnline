@@ -42,7 +42,7 @@ class TTSService : TextToSpeechService() {
     }
 
     override fun onStop() {
-        speechService.stopTTS()
+        speechService.ttsStop()
     }
 
     override fun onSynthesizeText(
