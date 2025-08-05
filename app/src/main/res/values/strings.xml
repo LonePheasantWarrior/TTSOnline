@@ -8,4 +8,8 @@
     <string name="input_text_for_speak">待合成文本</string>
     <string name="button_speak">朗读</string>
     <string name="save_settings">保存设置</string>
+    
+    <!-- TTS引擎相关字符串 -->
+    <string name="tts_engine_name">TTSOnline</string>
+    <string name="tts_engine_label">火山引擎语音合成</string>
 </resources>
