@@ -21,14 +21,14 @@ class TTSApplication : Application() {
         // 初始化火山引擎语音合成环境
         // 在Application创建时调用，确保整个应用生命周期内只执行一次
         SpeechEngineGenerator.PrepareEnvironment(applicationContext, this)
-        Log.i(LogTag.SDK_INFO, "火山引擎语音合成环境初始化完成")
+        Log.d(LogTag.SDK_INFO, "火山引擎语音合成环境初始化完成")
 
         // 向工程上下文注册基础组建
         speechEngine = SpeechEngine(this)
-        Log.i(LogTag.COMMON_INFO, "本地引擎已初始化")
+        Log.d(LogTag.COMMON_INFO, "本地引擎已初始化")
         speechService = SpeechService(this)
-        Log.i(LogTag.COMMON_INFO, "本地引擎服务已初始化")
-        audioPlayer = AudioPlayer()
-        Log.i(LogTag.COMMON_INFO, "默认播放器已初始化")
+        Log.d(LogTag.COMMON_INFO, "本地引擎服务已初始化")
+        audioPlayer = AudioPlayer(applicationContext)
+        Log.d(LogTag.COMMON_INFO, "默认播放器已初始化")
     }
 }

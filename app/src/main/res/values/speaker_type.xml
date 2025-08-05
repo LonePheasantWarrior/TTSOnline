@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 音色列表数组 -->
-    <array name="speaker_list">
+    <array name="speaker_list_small">
         <!-- 通用场景音色 -->
         <item>false|通用场景|灿灿 2.0|BV700_V2_streaming</item>
         <item>false|通用场景|炀炀|BV705_streaming</item>
@@ -79,7 +79,7 @@
     </array>
 
     <!-- 场景分类数组 -->
-    <array name="scene_categories">
+    <array name="scene_categories_small">
         <item>通用场景</item>
         <item>有声阅读</item>
         <item>智能助手</item>

@@ -1,7 +1,9 @@
 package com.wxh.ttsonline.function
 
+import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioManager
 import android.media.AudioTrack
 import android.util.Log
 import com.wxh.ttsonline.configuration.LogTag
@@ -9,7 +11,7 @@ import com.wxh.ttsonline.configuration.LogTag
 /**
  * 音频播放器
  */
-class AudioPlayer {
+class AudioPlayer(private val context: Context) {
     private var audioTrack: AudioTrack? = null
     private var isPlaying = false
 
@@ -18,24 +20,26 @@ class AudioPlayer {
      */
     private fun getCompatibleChannelConfig(channelConfig: Int): Int {
         // 检查设备是否支持指定的声道配置
-        val audioManager = android.content.Context.AUDIO_SERVICE as? android.media.AudioManager
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as? AudioManager
         return if (audioManager != null) {
             try {
                 // 尝试使用原始声道配置
-                val minBufferSize = AudioTrack.getMinBufferSize(44100, channelConfig, AudioFormat.ENCODING_PCM_16BIT)
+                val minBufferSize = AudioTrack.getMinBufferSize(24000, channelConfig, AudioFormat.ENCODING_PCM_16BIT)
                 if (minBufferSize > 0) {
+                    Log.d(LogTag.SPEECH_INFO, "声道配置$channelConfig 支持，最小缓冲区大小: $minBufferSize")
                     channelConfig
                 } else {
-                    // 如果不支持，使用默认声道配置
-                    Log.w(LogTag.SPEECH_INFO, "设备不支持声道配置$channelConfig，使用默认配置")
-                    AudioFormat.CHANNEL_OUT_DEFAULT
+                    // 如果不支持，使用单声道配置
+                    Log.w(LogTag.SPEECH_INFO, "设备不支持声道配置$channelConfig，使用单声道配置")
+                    AudioFormat.CHANNEL_OUT_MONO
                 }
             } catch (e: Exception) {
                 Log.w(LogTag.SPEECH_INFO, "检查声道配置时出错: ${e.message}", e)
-                AudioFormat.CHANNEL_OUT_DEFAULT
+                AudioFormat.CHANNEL_OUT_MONO
             }
         } else {
-            channelConfig
+            Log.w(LogTag.SPEECH_INFO, "无法获取AudioManager，使用默认声道配置")
+            AudioFormat.CHANNEL_OUT_MONO
         }
     }
 
@@ -48,7 +52,7 @@ class AudioPlayer {
      */
     fun play(
         audioData: ByteArray,
-        sampleRate: Int = 44100,
+        sampleRate: Int = 24000,
         channelConfig: Int = AudioFormat.CHANNEL_OUT_MONO,
         audioFormat: Int = AudioFormat.ENCODING_PCM_16BIT
     ) {
@@ -69,7 +73,7 @@ class AudioPlayer {
             // 创建AudioTrack实例
             val audioAttributes = AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
                 .build()
 
             val trackAudioFormat = AudioFormat.Builder()
@@ -103,8 +107,13 @@ class AudioPlayer {
                 }
             })
 
-            // 设置标记位置为音频数据末尾
-            audioTrack?.setNotificationMarkerPosition(audioData.size / 2) // 假设16位PCM，每个样本2字节
+            // 根据音频格式设置标记位置
+    val markerPosition = if (audioFormat == AudioFormat.ENCODING_PCM_16BIT) {
+        audioData.size / 2 // 16位PCM，每个样本2字节
+    } else {
+        audioData.size // 8位PCM，每个样本1字节
+    }
+    audioTrack?.setNotificationMarkerPosition(markerPosition)
 
             // 开始播放
             audioTrack?.play()

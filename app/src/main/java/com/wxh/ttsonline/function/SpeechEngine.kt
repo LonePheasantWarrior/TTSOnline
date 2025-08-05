@@ -27,12 +27,6 @@ class SpeechEngine(private val context: Context) {
     var isInitialized: Boolean = false
 
     /**
-     * 语音合成参数
-     */
-    private var startEnginePayload: StartEnginePayload? = null
-
-
-    /**
      * 获取语音合成引擎
      */
     fun getEngine(): SpeechEngine {
@@ -43,25 +37,14 @@ class SpeechEngine(private val context: Context) {
     }
 
     /**
-     * 获取语音合成参数
-     */
-    fun getStartEnginePayload(): StartEnginePayload {
-        if (!isInitialized) {
-            throw IllegalStateException("语音合成引擎未初始化")
-        }
-        return startEnginePayload!!
-    }
-
-    /**
      * 创建引擎实例
      */
-    private fun createEngine(): SpeechEngine? {
+    private fun createEngine(): Long? {
         engine = SpeechEngineGenerator.getInstance()
         if (engine == null) {
             return null
         }
-        engine!!.createEngine()
-        return engine as SpeechEngine
+        return engine!!.createEngine()
     }
 
     /**
@@ -96,23 +79,25 @@ class SpeechEngine(private val context: Context) {
         speedRatio: Double?
     ) {
         if (text.isBlank()) {
-            Log.w(LogTag.SPEECH_ERROR, "待处理文本内容为空")
+            Log.w(LogTag.SPEECH_ERROR, "待处理文本内容为空,使用默认内容")
             return
         }
+        destroy()
         //创建全局引擎实例
-        if (engine == null) {
-            createEngine()
-        }
+        createEngine()
         if (engine == null) {
             Log.e(LogTag.SDK_ERROR, "语音合成引擎实例创建失败")
             Toast.makeText(context, "引擎创建失败", Toast.LENGTH_SHORT).show()
             return
         }
-        startEnginePayload = StartEnginePayloadBuilder().setSpeaker(speakerType).build()
+        engine!!.setContext(context)
 
         //初始化引擎参数
         engine!!.setOptionString(
             SpeechEngineDefines.PARAMS_KEY_LOG_LEVEL_STRING, SpeechEngineDefines.LOG_LEVEL_DEBUG
+        )
+        engine!!.setOptionString(
+            SpeechEngineDefines.PARAMS_KEY_UID_STRING, "default"
         )
         //引擎名称
         engine!!.setOptionString(
@@ -123,8 +108,6 @@ class SpeechEngine(private val context: Context) {
             SpeechEngineDefines.PARAMS_KEY_TTS_WORK_MODE_INT,
             SpeechEngineDefines.TTS_WORK_MODE_ONLINE
         )
-        //用于区分不同的用户，在线合成必需配置
-        engine!!.setOptionString(SpeechEngineDefines.PARAMS_KEY_UID_STRING, "default")
         //鉴权相关：AppId
         engine!!.setOptionString(SpeechEngineDefines.PARAMS_KEY_APP_ID_STRING, appId)
         //鉴权相关：Token
@@ -142,13 +125,13 @@ class SpeechEngine(private val context: Context) {
         engine!!.setOptionString(
             SpeechEngineDefines.PARAMS_KEY_TTS_CLUSTER_STRING, Dictionary.SpeechEngine.CLUSTER
         )
-        //语音合成服务Resource id
+        //在线合成使用的“发音人类型”
         engine!!.setOptionString(
-            SpeechEngineDefines.PARAMS_KEY_RESOURCE_ID_STRING, Dictionary.SpeechEngine.RES_ID
+            SpeechEngineDefines.PARAMS_KEY_TTS_VOICE_TYPE_ONLINE_STRING, speakerType
         )
-        //在线合成使用的“发音人”
+        //在线合成使用的“发音人类型”
         engine!!.setOptionString(
-            SpeechEngineDefines.PARAMS_KEY_TTS_VOICE_ONLINE_STRING, speakerType
+            SpeechEngineDefines.PARAMS_KEY_TTS_VOICE_ONLINE_STRING, Dictionary.SpeechEngine.VOICE
         )
         //语音合成 SDK 默认使用内置的播放器播放合成的音频，如果开发者希望使用其他播放器，可以通过以下配置项禁用内置播放器
         engine!!.setOptionBoolean(
@@ -202,7 +185,6 @@ class SpeechEngine(private val context: Context) {
             Toast.makeText(context, "引擎初始化失败,错误代码: $initRes", Toast.LENGTH_SHORT).show()
             return
         }
-        engine!!.setContext(context)
         engine!!.setListener((context.applicationContext as TTSApplication).speechService)
 
         Log.i(LogTag.SDK_INFO, "语音合成引擎实例初始化完成")

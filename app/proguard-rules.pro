@@ -23,11 +23,6 @@
 # 火山引擎TTS SDK混淆规则
 -keep class com.bytedance.speech.speechengine.SpeechEngineImpl {*;}
 
-# 保留TTS相关的native方法
--keepclassmembers class * {
-    native <methods>;
-}
-
 # 保留枚举类
 -keepclassmembers enum * {
     public static **[] values();

@@ -15,6 +15,8 @@ import java.io.ByteArrayOutputStream
 class SpeechService(private val context: Context) :
     com.bytedance.speech.speechengine.SpeechEngine.SpeechListener {
 
+    val defaultText =
+        "愿中国青年都摆脱冷气，只是向上走，不必听自暴自弃者流的话。能做事的做事，能发声的发声。有一分热，发一分光。就令萤火一般，也可以在黑暗里发一点光，不必等候炬火。此后如竟没有炬火：我便是唯一的光。"
     private val speechEngine: SpeechEngine
         get() = (context.applicationContext as TTSApplication).speechEngine
     private val audioPlayer: AudioPlayer
@@ -41,6 +43,11 @@ class SpeechService(private val context: Context) :
     var currentScene: String = Dictionary.SpeechServiceScene.REGULAR
 
     /**
+     * 音频内容
+     */
+    var voiceByteArrayOutputStream: ByteArrayOutputStream = ByteArrayOutputStream()
+
+    /**
      * 语音合成指定文本内容
      */
     fun tts(text: CharSequence?) {
@@ -49,13 +56,18 @@ class SpeechService(private val context: Context) :
 
         if (text.isNullOrBlank()) {
             currentState = Dictionary.SpeechServiceState.PENDING
-            lastErrorMsg = "待合成文本为空"
+            lastErrorMsg = "待合成文本为空,使用默认文本"
             Log.e(LogTag.SPEECH_ERROR, lastErrorMsg)
             Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
-            return
+            ttsInner(defaultText, null, null)
+        } else {
+            if (text.length > 80) {
+                lastErrorMsg = "待合成文本超长（80字符）"
+                Log.w(LogTag.SPEECH_ERROR, lastErrorMsg)
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
+            ttsInner(text, null, null)
         }
-
-        ttsInner(text, null, null)
     }
 
     /**
@@ -114,7 +126,15 @@ class SpeechService(private val context: Context) :
         val speechRate: Double = degreeValueConvert(speechRateForSys)
 
         speechEngine.destroy()
-        speechEngine.initEngine(appId, token, selectedSpeakerType, text as String, pitchRate, null, speechRate)
+        speechEngine.initEngine(
+            appId,
+            token,
+            selectedSpeakerType,
+            text as String,
+            pitchRate,
+            null,
+            speechRate
+        )
 
         if (!speechEngine.isInitialized) {
             lastErrorMsg = String.format("语音合成引擎未初始化")
@@ -236,20 +256,8 @@ class SpeechService(private val context: Context) :
 
         var localState = currentState
 
-        var resCode: Int?
-        if (Dictionary.SpeechServiceState.PROCESSING == currentState) {
-            resCode = speechEngine.getEngine()
-                .sendDirective(SpeechEngineDefines.DIRECTIVE_EVENT_CANCLE_SESSION, "")
-            if (resCode != SpeechEngineDefines.ERR_NO_ERROR) {
-                lastErrorMsg = String.format("语音合成会话取消失败: $resCode")
-                Log.e(LogTag.SDK_ERROR, lastErrorMsg)
-                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
-                localState = Dictionary.SpeechServiceState.ERROR
-            }
-        }
-
-        resCode = speechEngine.getEngine()
-            .sendDirective(SpeechEngineDefines.DIRECTIVE_EVENT_FINISH_SESSION, "")
+        val resCode = speechEngine.getEngine()
+            .sendDirective(SpeechEngineDefines.DIRECTIVE_STOP_ENGINE, "")
         if (resCode != SpeechEngineDefines.ERR_NO_ERROR) {
             lastErrorMsg = String.format("语音合成会话终止失败: $resCode")
             Log.e(LogTag.SDK_ERROR, lastErrorMsg)
@@ -280,9 +288,15 @@ class SpeechService(private val context: Context) :
                 LogTag.SDK_INFO, "SpeechMessage: 引擎已停止"
             )
 
-            SpeechEngineDefines.MESSAGE_TYPE_ENGINE_ERROR -> Log.e(
-                LogTag.SDK_ERROR, "SpeechMessage: 引擎发生错误"
-            )
+            SpeechEngineDefines.MESSAGE_TYPE_ENGINE_ERROR -> {
+                var errorData: String? = ""
+                if (data != null && data.isNotEmpty()) {
+                    errorData = String(data)
+                }
+                Log.e(
+                    LogTag.SDK_ERROR, "SpeechMessage: 引擎发生错误: $errorData"
+                )
+            }
 
             SpeechEngineDefines.MESSAGE_TYPE_ENGINE_LOG -> {
                 if (data != null) {
@@ -290,8 +304,10 @@ class SpeechService(private val context: Context) :
                     Log.d(LogTag.SDK_INFO, "SpeechMessage: 引擎日志: $dataStr")
                 }
             }
+
             SpeechEngineDefines.MESSAGE_TYPE_TTS_SYNTHESIS_BEGIN -> {
                 Log.d(LogTag.SDK_INFO, "SpeechMessage: 语音合成已开始")
+                voiceByteArrayOutputStream.reset()
             }
 
             SpeechEngineDefines.MESSAGE_TYPE_TTS_SYNTHESIS_END -> Log.d(
@@ -299,11 +315,19 @@ class SpeechService(private val context: Context) :
             )
 
             SpeechEngineDefines.MESSAGE_TYPE_TTS_AUDIO_DATA -> {
-                Log.d(LogTag.SDK_INFO, "SpeechMessage: 收到音频数据")
+                Log.d(LogTag.SDK_INFO, "SpeechMessage: 收到音频数据,回调数据长度: $len")
+                if (data != null && data.isNotEmpty()) {
+                    voiceByteArrayOutputStream.write(data)
+                }
+            }
+
+            SpeechEngineDefines.MESSAGE_TYPE_TTS_AUDIO_DATA_END -> {
+                Log.d(LogTag.SDK_INFO, "SpeechMessage: 音频数据接收完毕,回调数据长度: $len")
+                val voiceByteArray = voiceByteArrayOutputStream.toByteArray();
                 if (Dictionary.SpeechServiceScene.DEMO == currentScene) {
-                    ttsCallback(data)
+                    ttsCallback(voiceByteArray)
                 } else if (Dictionary.SpeechServiceScene.REGULAR == currentScene) {
-                    ttsCallbackForSys(data, data!!.size)
+                    ttsCallbackForSys(voiceByteArray, voiceByteArray.size)
                 } else {
                     throw RuntimeException("不受支持的语音合成工作场景")
                 }

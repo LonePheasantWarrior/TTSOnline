@@ -85,6 +85,11 @@ class Dictionary {
         const val RES_ID = "volc.service_type.10029"
 
         /**
+         * 发音人（非语音克隆场景使用other）
+         */
+        const val VOICE = "other"
+
+        /**
          * 支持的语言列表（语言代码, 国家代码, 变体）
          * 例如: Pair("zh", "CN") 表示简体中文
          */

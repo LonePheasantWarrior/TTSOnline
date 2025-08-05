@@ -51,11 +51,6 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     //火山引擎-豆包语音
-    implementation(libs.boringssl.so)
-    implementation("org.chromium.net:cronet:4.2.210.3-tob") {
-        exclude(group = "com.bytedance.common", module = "wschannel")
-    }
-    implementation(libs.ttnet)
     implementation(libs.speechengine.tob)
     
     // JSON序列化
