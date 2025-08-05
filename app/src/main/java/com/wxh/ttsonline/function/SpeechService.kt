@@ -228,13 +228,17 @@ class SpeechService(private val context: Context) :
                     SpeechEngineDefines.DIRECTIVE_SYNTHESIS, ""
                 )
                 if (resCode != SpeechEngineDefines.ERR_NO_ERROR) {
-                    lastErrorMsg = String.format("发起语音合成请求失败: $resCode")
-                    Log.e(LogTag.SDK_ERROR, lastErrorMsg)
-                    mainHandler.post {
-                        Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                    if (SpeechEngineDefines.ERR_SYNTHESIS_IS_BUSY == resCode) {
+                        Log.i(LogTag.SDK_INFO, "忽略 [${SpeechEngineDefines.ERR_SYNTHESIS_IS_BUSY}] 错误，视为处理中...")
+                    } else {
+                        lastErrorMsg = String.format("发起语音合成请求失败: $resCode")
+                        Log.e(LogTag.SDK_ERROR, lastErrorMsg)
+                        mainHandler.post {
+                            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                        }
+                        currentState = Dictionary.SpeechServiceState.ERROR
+                        ttsStop()
                     }
-                    currentState = Dictionary.SpeechServiceState.ERROR
-                    ttsStop()
                 }
             }
 
