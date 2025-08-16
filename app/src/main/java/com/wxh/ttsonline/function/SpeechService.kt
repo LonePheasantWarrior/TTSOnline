@@ -133,7 +133,7 @@ class SpeechService(private val context: Context) :
                 }
                 Dictionary.SpeechServiceState.PROCESSING_COMPLETED -> {
                     // 处理完成，调用done()结束本次TTS作业
-                    Log.d(LogTag.SDK_INFO, "语音合成处理完成")
+                    Log.d(LogTag.SPEECH_INFO, "语音合成处理完成")
                     callbackForSys?.done()
                     callbackForSys = null
                     currentState = Dictionary.SpeechServiceState.PENDING
@@ -149,7 +149,7 @@ class SpeechService(private val context: Context) :
                 }
                 Dictionary.SpeechServiceState.PENDING -> {
                     // 已挂起，调用done()结束本次TTS作业
-                    Log.d(LogTag.SDK_INFO, "语音合成状态为挂起")
+                    Log.d(LogTag.SPEECH_INFO, "语音合成状态为挂起")
                     callbackForSys?.done()
                     callbackForSys = null
                     break
