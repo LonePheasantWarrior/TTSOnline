@@ -165,7 +165,7 @@ class SpeechService(private val context: Context) :
             }
         }
         
-        Log.d(LogTag.SDK_INFO, "语音合成等待结束，最终状态: $currentState")
+        Log.d(LogTag.SDK_INFO, "语音合成等待结束，最终状态(0-挂起,1-处理器中,2-已完成,3-错误): $currentState")
     }
 
     /**
