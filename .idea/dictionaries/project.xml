@@ -2,6 +2,7 @@
   <dictionary name="project">
     <words>
       <w>openspeech</w>
+      <w>ttsonline</w>
     </words>
   </dictionary>
 </component>

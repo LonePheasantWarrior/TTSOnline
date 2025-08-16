@@ -8,14 +8,13 @@ import com.bytedance.speech.speechengine.SpeechEngineDefines
 import com.bytedance.speech.speechengine.SpeechEngineGenerator
 import com.wxh.ttsonline.configuration.Dictionary
 import com.wxh.ttsonline.configuration.LogTag
-import com.wxh.ttsonline.configuration.TTSApplication
-import com.wxh.ttsonline.dto.StartEnginePayload
-import com.wxh.ttsonline.dto.StartEnginePayloadBuilder
 
 /**
  * 语音合成引擎相关功能
  */
 class SpeechEngine(private val context: Context) {
+    private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    
     /**
      * 语音合成引擎
      */
@@ -77,7 +76,8 @@ class SpeechEngine(private val context: Context) {
         pitchRatio: Double?,
         volumeRatio: Double?,
         speedRatio: Double?,
-        isEnablePlayer: Boolean
+        isEnablePlayer: Boolean,
+        listener: SpeechService
     ) {
         if (text.isBlank()) {
             Log.w(LogTag.SPEECH_ERROR, "待处理文本内容为空,使用默认内容")
@@ -88,7 +88,9 @@ class SpeechEngine(private val context: Context) {
         createEngine()
         if (engine == null) {
             Log.e(LogTag.SDK_ERROR, "语音合成引擎实例创建失败")
-            Toast.makeText(context, "引擎创建失败", Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, "引擎创建失败", Toast.LENGTH_SHORT).show()
+            }
             return
         }
         engine!!.setContext(context)
@@ -185,10 +187,12 @@ class SpeechEngine(private val context: Context) {
         val initRes = engine!!.initEngine()
         if (initRes != SpeechEngineDefines.ERR_NO_ERROR) {
             Log.e(LogTag.SDK_ERROR, "语音合成引擎实例初始化失败,错误代码: $initRes")
-            Toast.makeText(context, "引擎初始化失败,错误代码: $initRes", Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, "引擎初始化失败,错误代码: $initRes", Toast.LENGTH_SHORT).show()
+            }
             return
         }
-        engine!!.setListener((context.applicationContext as TTSApplication).speechService)
+        engine!!.setListener(listener)
 
         Log.i(LogTag.SDK_INFO, "语音合成引擎实例初始化完成")
         isInitialized = true

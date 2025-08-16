@@ -7,6 +7,7 @@ import android.speech.tts.TextToSpeech
 import android.speech.tts.TextToSpeechService
 import android.util.Log
 import com.wxh.ttsonline.configuration.LogTag
+import com.wxh.ttsonline.configuration.TTSApplication
 
 /**
  * TTS引擎服务类，实现Android系统的TTS接口
@@ -14,11 +15,11 @@ import com.wxh.ttsonline.configuration.LogTag
  */
 class TTSEngineService : TextToSpeechService() {
 
-    private lateinit var speechService: SpeechService
+    private val speechService: SpeechService
+        get() = (applicationContext as TTSApplication).speechService
 
     override fun onCreate() {
         super.onCreate()
-        speechService = SpeechService(this)
         Log.d(LogTag.SDK_INFO, "TTSEngineService onCreate")
     }
 
@@ -34,14 +35,9 @@ class TTSEngineService : TextToSpeechService() {
      */
     override fun onSynthesizeText(request: SynthesisRequest, callback: SynthesisCallback) {
         Log.d(LogTag.SDK_INFO, "TTSEngineService onSynthesizeText: ${request.charSequenceText}")
-        
-        try {
-            // 调用你的SpeechService来处理TTS请求
-            speechService.tts(request, callback)
-        } catch (e: Exception) {
-            Log.e(LogTag.SPEECH_ERROR, "TTS合成失败: ${e.message}", e)
-            callback.error(TextToSpeech.ERROR_SERVICE)
-        }
+
+        // 调用你的SpeechService来处理TTS请求
+        speechService.tts(request, callback)
     }
 
     /**

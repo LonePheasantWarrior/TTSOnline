@@ -70,39 +70,6 @@
                 android:resource="@xml/tts_engine" />
         </service>
 
-        <!-- TTS引擎服务 - 替代配置2 -->
-        <service
-            android:name=".function.TTSEngineServiceAlternative"
-            android:exported="true"
-            android:label="@string/tts_engine_name"
-            android:permission="android.permission.BIND_TTS_SERVICE">
-            <intent-filter>
-                <action android:name="android.intent.action.TTS_SERVICE" />
-            </intent-filter>
-        </service>
-
-        <!-- TTS引擎服务 - 替代配置3 -->
-        <service
-            android:name=".function.TTSEngineServiceTraditional"
-            android:exported="true"
-            android:label="@string/tts_engine_name"
-            android:permission="android.permission.BIND_TTS_SERVICE">
-            <intent-filter>
-                <action android:name="android.intent.action.TTS_SERVICE" />
-            </intent-filter>
-        </service>
-
-        <!-- 接收器：监听TTS相关广播 -->
-        <receiver
-            android:name=".function.TTSBroadcastReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <data android:scheme="package" />
-            </intent-filter>
-        </receiver>
-
     </application>
 
 </manifest>

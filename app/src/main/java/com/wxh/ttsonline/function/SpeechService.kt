@@ -8,6 +8,7 @@ import android.speech.tts.SynthesisCallback
 import android.speech.tts.SynthesisRequest
 import android.util.Log
 import android.widget.Toast
+import com.bytedance.speech.da
 import com.bytedance.speech.speechengine.SpeechEngineDefines
 import com.wxh.ttsonline.configuration.Dictionary
 import com.wxh.ttsonline.configuration.LogTag
@@ -53,13 +54,17 @@ class SpeechService(private val context: Context) :
             currentState = Dictionary.SpeechServiceState.PENDING
             lastErrorMsg = "待合成文本为空,使用默认文本"
             Log.e(LogTag.SPEECH_ERROR, lastErrorMsg)
-            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
             ttsInner(defaultText, null, null)
         } else {
             if (text.length > 80) {
                 lastErrorMsg = "待合成文本超长（80字符）"
                 Log.w(LogTag.SPEECH_ERROR, lastErrorMsg)
-                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                mainHandler.post {
+                    Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                }
             }
             ttsInner(text, null, null)
         }
@@ -84,10 +89,83 @@ class SpeechService(private val context: Context) :
             callbackForSys!!.done()
             return
         }
-        val res = ttsInner(request.charSequenceText, request.pitch, request.speechRate)
-        if (!res) {
-            callbackForSys!!.done()
+        ttsInner(request.charSequenceText, request.pitch, request.speechRate)
+
+        // 等待处理结果(currentState),得到结果后根据状态执行相应动作
+        // 如果currentState为Dictionary.SpeechServiceState.PROCESSING,则持续等待(0.5秒检查一次)
+        // 如果currentState为非Dictionary.SpeechServiceState.PROCESSING,则执行callbackForSys!!.done()结束本次TTS作业
+        waitForProcessingResult()
+    }
+
+    /**
+     * 等待语音合成处理结果（同步阻塞）
+     */
+    private fun waitForProcessingResult() {
+        val checkInterval = 500L // 0.5秒检查一次
+        val maxWaitTime = 30000L // 最大等待30秒，避免无限等待
+        val startTime = System.currentTimeMillis()
+        
+        Log.d(LogTag.SDK_INFO, "开始等待语音合成处理结果，当前状态: $currentState")
+        
+        // 同步等待处理结果
+        while (true) {
+            // 检查是否超时
+            if (System.currentTimeMillis() - startTime > maxWaitTime) {
+                Log.w(LogTag.SPEECH_ERROR, "等待语音合成结果超时(${maxWaitTime}ms)")
+                callbackForSys?.done()
+                callbackForSys = null
+                currentState = Dictionary.SpeechServiceState.PENDING
+                break
+            }
+            
+            when (currentState) {
+                Dictionary.SpeechServiceState.PROCESSING -> {
+                    // 仍在处理中，继续等待
+                    try {
+                        Thread.sleep(checkInterval)
+                    } catch (e: InterruptedException) {
+                        Log.w(LogTag.SPEECH_ERROR, "等待语音合成结果时被中断")
+                        callbackForSys?.done()
+                        callbackForSys = null
+                        currentState = Dictionary.SpeechServiceState.PENDING
+                        break
+                    }
+                }
+                Dictionary.SpeechServiceState.PROCESSING_COMPLETED -> {
+                    // 处理完成，调用done()结束本次TTS作业
+                    Log.d(LogTag.SDK_INFO, "语音合成处理完成")
+                    callbackForSys?.done()
+                    callbackForSys = null
+                    currentState = Dictionary.SpeechServiceState.PENDING
+                    break
+                }
+                Dictionary.SpeechServiceState.ERROR -> {
+                    // 发生错误，调用done()结束本次TTS作业
+                    Log.e(LogTag.SPEECH_ERROR, "语音合成发生错误: $lastErrorMsg")
+                    callbackForSys?.done()
+                    callbackForSys = null
+                    currentState = Dictionary.SpeechServiceState.PENDING
+                    break
+                }
+                Dictionary.SpeechServiceState.PENDING -> {
+                    // 已挂起，调用done()结束本次TTS作业
+                    Log.d(LogTag.SDK_INFO, "语音合成状态为挂起")
+                    callbackForSys?.done()
+                    callbackForSys = null
+                    break
+                }
+                else -> {
+                    // 未知状态，调用done()结束本次TTS作业
+                    Log.w(LogTag.SPEECH_ERROR, "未知的语音合成状态: $currentState")
+                    callbackForSys?.done()
+                    callbackForSys = null
+                    currentState = Dictionary.SpeechServiceState.PENDING
+                    break
+                }
+            }
         }
+        
+        Log.d(LogTag.SDK_INFO, "语音合成等待结束，最终状态: $currentState")
     }
 
     /**
@@ -100,7 +178,9 @@ class SpeechService(private val context: Context) :
         if (currentState == Dictionary.SpeechServiceState.PROCESSING) {
             lastErrorMsg = String.format("语音合成引擎正忙")
             Log.e(LogTag.COMMON_ERROR, lastErrorMsg)
-            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
             return false
         }
 
@@ -119,7 +199,9 @@ class SpeechService(private val context: Context) :
         if (appId.isNullOrBlank() || token.isNullOrBlank() || selectedSpeakerType.isNullOrBlank()) {
             lastErrorMsg = String.format("语音合成引擎配置不完整")
             Log.e(LogTag.COMMON_ERROR, lastErrorMsg)
-            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
             return false
         }
 
@@ -135,13 +217,16 @@ class SpeechService(private val context: Context) :
             pitchRate,
             null,
             speechRate,
-            currentScene == Dictionary.SpeechServiceScene.DEMO
+            currentScene == Dictionary.SpeechServiceScene.DEMO,
+            this
         )
 
         if (!speechEngine.isInitialized) {
             lastErrorMsg = String.format("语音合成引擎未初始化")
             Log.e(LogTag.SDK_ERROR, lastErrorMsg)
-            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
             currentState = Dictionary.SpeechServiceState.ERROR
             return false
         }
@@ -153,7 +238,9 @@ class SpeechService(private val context: Context) :
         if (resCode != SpeechEngineDefines.ERR_NO_ERROR) {
             lastErrorMsg = String.format("停止历史语音引擎发生错误: $resCode")
             Log.e(LogTag.SDK_ERROR, lastErrorMsg)
-            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
             currentState = Dictionary.SpeechServiceState.ERROR
             return false
         }
@@ -165,7 +252,9 @@ class SpeechService(private val context: Context) :
         if (resCode != SpeechEngineDefines.ERR_NO_ERROR) {
             lastErrorMsg = String.format("启动语音引擎发生错误: $resCode")
             Log.e(LogTag.SDK_ERROR, lastErrorMsg)
-            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
             currentState = Dictionary.SpeechServiceState.ERROR
             return false
         }
@@ -182,34 +271,41 @@ class SpeechService(private val context: Context) :
         if (callbackForSys == null) {
             lastErrorMsg = "SynthesisCallback为空"
             Log.e(LogTag.SPEECH_ERROR, lastErrorMsg)
-            Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            mainHandler.post {
+                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+            }
             currentState = Dictionary.SpeechServiceState.ERROR
             return
         }
 
         if (data != null && data.isNotEmpty() && dataLength > 0) {
-            callbackForSys!!.audioAvailable(data, 0, dataLength)
+            Log.d(LogTag.SPEECH_INFO, "待播放媒体数据实际长度: ${data.size}, 标记长度: $dataLength")
+            
+            // Android TTS系统对单次传递的音频数据大小有限制，需要分块处理
+            val maxChunkSize = 8192 // 8KB限制，避免缓冲区过大错误
+            var offset = 0
+            
+            while (offset < dataLength) {
+                val chunkSize = minOf(maxChunkSize, dataLength - offset)
+                try {
+                    callbackForSys!!.audioAvailable(data, offset, chunkSize)
+                    offset += chunkSize
+                } catch (e: IllegalArgumentException) {
+                    Log.e(LogTag.SPEECH_ERROR, "audioAvailable调用失败: ${e.message}")
+                    lastErrorMsg = "音频数据处理失败: ${e.message}"
+                    mainHandler.post {
+                        Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                    }
+                    currentState = Dictionary.SpeechServiceState.ERROR
+                    return
+                }
+            }
         }
 
         if (isFinal) {
-            ttsStop()
+            Log.d(LogTag.SPEECH_INFO, "本次TTS作业完成")
+            currentState = Dictionary.SpeechServiceState.PROCESSING_COMPLETED
         }
-    }
-
-    /**
-     * 终止语音合成作业
-     */
-    fun ttsStop() {
-        currentState = Dictionary.SpeechServiceState.PROCESSING_COMPLETED
-
-        if (Dictionary.SpeechServiceScene.DEMO == currentScene) {
-            currentState = Dictionary.SpeechServiceState.PENDING
-            return
-        }
-
-        callbackForSys!!.done()
-        callbackForSys == null
-        currentState = Dictionary.SpeechServiceState.PENDING
     }
 
     /**
@@ -237,7 +333,6 @@ class SpeechService(private val context: Context) :
                             Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
                         }
                         currentState = Dictionary.SpeechServiceState.ERROR
-                        ttsStop()
                     }
                 }
             }
@@ -301,9 +396,6 @@ class SpeechService(private val context: Context) :
 
             SpeechEngineDefines.MESSAGE_TYPE_TTS_FINISH_PLAYING -> {
                 Log.d(LogTag.SDK_INFO, "SpeechMessage: 音频播放完毕")
-                if (currentScene == Dictionary.SpeechServiceScene.DEMO) {
-                    ttsStop()
-                }
             }
 
             else -> {
@@ -311,6 +403,12 @@ class SpeechService(private val context: Context) :
                 Log.i(LogTag.SDK_INFO, warnMsg)
             }
         }
+    }
+
+    fun ttsStop() {
+        speechEngine.destroy()
+        callbackForSys = null
+        currentState = Dictionary.SpeechServiceState.PENDING
     }
 
     companion object {

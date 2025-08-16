@@ -32,12 +32,12 @@ class Dictionary {
         /**
          * 语音已合成
          */
-        const val PROCESSING_COMPLETED = 1
+        const val PROCESSING_COMPLETED = 2
 
         /**
          * 发生错误
          */
-        const val ERROR = 2
+        const val ERROR = 3
     }
 
     /**
