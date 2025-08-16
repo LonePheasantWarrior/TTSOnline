@@ -102,7 +102,7 @@ class SpeechService(private val context: Context) :
      */
     private fun waitForProcessingResult() {
         val checkInterval = 500L // 0.5秒检查一次
-        val maxWaitTime = 30000L // 最大等待30秒，避免无限等待
+        val maxWaitTime = 15000L // 最大等待30秒，避免无限等待
         val startTime = System.currentTimeMillis()
         
         Log.d(LogTag.SDK_INFO, "开始等待语音合成处理结果，当前状态: $currentState")
