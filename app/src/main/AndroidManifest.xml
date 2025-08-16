@@ -9,8 +9,6 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- TTS引擎需要的权限 -->
-    <uses-permission android:name="android.permission.BIND_TEXT_TO_SPEECH_ENGINE" />
     <!-- Android 13+ 需要的权限 -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -44,23 +42,9 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service
-            android:name=".function.TTSService"
-            android:exported="true"
-            android:permission="android.permission.BIND_TEXT_TO_SPEECH_ENGINE"
-            android:foregroundServiceType="mediaProjection"
-            android:process=":tts">
-            <intent-filter>
-                <action android:name="android.intent.action.TTS_SERVICE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.speech.tts"
-                android:resource="@xml/tts_engine" />
-        </service>
     </application>
     
 
