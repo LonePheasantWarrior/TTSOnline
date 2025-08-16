@@ -16,6 +16,12 @@
     <!-- TTS引擎需要的额外权限 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+    <!-- TTS服务绑定权限 - 系统级权限，IDE警告可忽略 -->
+    <uses-permission android:name="android.permission.BIND_TTS_SERVICE" />
+    <!-- 音频相关权限 -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- 系统级权限 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Android 11+ 包可见性配置，允许系统发现TTS引擎 -->
     <queries>
@@ -23,6 +29,7 @@
             <action android:name="android.intent.action.TTS_SERVICE" />
         </intent>
         <package android:name="com.android.settings" />
+        <package android:name="com.android.settings.intelligence" />
     </queries>
 
     <application
@@ -37,6 +44,7 @@
         android:theme="@style/Theme.TTSOnline"
         tools:replace="android:appComponentFactory"
         android:appComponentFactory="androidx.core.app.CoreComponentFactory">
+        
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -45,7 +53,56 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- TTS引擎服务 - 替代配置1 -->
+        <service
+            android:name=".function.TTSEngineService"
+            android:exported="true"
+            android:label="@string/tts_engine_name"
+            android:permission="android.permission.BIND_TTS_SERVICE"
+            android:process=":tts">
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.speech.tts"
+                android:resource="@xml/tts_engine" />
+        </service>
+
+        <!-- TTS引擎服务 - 替代配置2 -->
+        <service
+            android:name=".function.TTSEngineServiceAlternative"
+            android:exported="true"
+            android:label="@string/tts_engine_name"
+            android:permission="android.permission.BIND_TTS_SERVICE">
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE" />
+            </intent-filter>
+        </service>
+
+        <!-- TTS引擎服务 - 替代配置3 -->
+        <service
+            android:name=".function.TTSEngineServiceTraditional"
+            android:exported="true"
+            android:label="@string/tts_engine_name"
+            android:permission="android.permission.BIND_TTS_SERVICE">
+            <intent-filter>
+                <action android:name="android.intent.action.TTS_SERVICE" />
+            </intent-filter>
+        </service>
+
+        <!-- 接收器：监听TTS相关广播 -->
+        <receiver
+            android:name=".function.TTSBroadcastReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
     </application>
-    
 
 </manifest>

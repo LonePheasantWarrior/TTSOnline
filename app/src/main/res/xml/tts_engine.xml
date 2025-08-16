@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tts-engine xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- TTS引擎信息 -->
+    <engine-info
+        android:name="@string/tts_engine_name"
+        android:label="@string/tts_engine_label"
+        android:description="@string/tts_engine_label" />
+    
+    <!-- 引擎特性 -->
+    <engine-features>
+        <!-- 支持音调调节 -->
+        <feature android:name="android.speech.tts.feature.PITCH" />
+        <!-- 支持语速调节 -->
+        <feature android:name="android.speech.tts.feature.SPEED" />
+        <!-- 支持网络合成 -->
+        <feature android:name="android.speech.tts.feature.NETWORK_SYNTHESIS" />
+    </engine-features>
+</tts-engine>
