@@ -54,7 +54,7 @@
             </intent-filter>
         </activity>
 
-        <!-- TTS引擎服务 - 替代配置1 -->
+        <!-- TTS引擎服务 -->
         <service
             android:name=".function.TTSEngineService"
             android:exported="true"
