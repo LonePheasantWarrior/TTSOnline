@@ -2,13 +2,13 @@ package com.wxh.ttsonline.function
 
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.media.AudioFormat
 import android.os.Handler
 import android.os.Looper
 import android.speech.tts.SynthesisCallback
 import android.speech.tts.SynthesisRequest
 import android.util.Log
 import android.widget.Toast
-import com.bytedance.speech.da
 import com.bytedance.speech.speechengine.SpeechEngineDefines
 import com.wxh.ttsonline.configuration.Dictionary
 import com.wxh.ttsonline.configuration.LogTag
@@ -43,6 +43,11 @@ class SpeechService(private val context: Context) :
      * 当前语音合成服务运行场景
      */
     var currentScene: String = Dictionary.SpeechServiceScene.REGULAR
+
+    /**
+     * 是否已经开始向系统TTS传递音频内容
+     */
+    var isAudioAvailableStarted: Boolean? = null
 
     /**
      * 语音合成指定文本内容
@@ -84,7 +89,6 @@ class SpeechService(private val context: Context) :
         callbackForSys = callback
 
         if (request == null || request.charSequenceText.isNullOrBlank()) {
-            callback.done()
             currentState = Dictionary.SpeechServiceState.PENDING
             callbackForSys!!.done()
             return
@@ -112,7 +116,7 @@ class SpeechService(private val context: Context) :
             // 检查是否超时
             if (System.currentTimeMillis() - startTime > maxWaitTime) {
                 Log.w(LogTag.SPEECH_ERROR, "等待语音合成结果超时(${maxWaitTime}ms)")
-                callbackForSys?.done()
+                callbackForSys?.error()
                 callbackForSys = null
                 currentState = Dictionary.SpeechServiceState.PENDING
                 break
@@ -123,7 +127,7 @@ class SpeechService(private val context: Context) :
                     // 仍在处理中，继续等待
                     try {
                         Thread.sleep(checkInterval)
-                    } catch (e: InterruptedException) {
+                    } catch (_: InterruptedException) {
                         Log.w(LogTag.SPEECH_ERROR, "等待语音合成结果时被中断")
                         callbackForSys?.done()
                         callbackForSys = null
@@ -142,7 +146,7 @@ class SpeechService(private val context: Context) :
                 Dictionary.SpeechServiceState.ERROR -> {
                     // 发生错误，调用done()结束本次TTS作业
                     Log.e(LogTag.SPEECH_ERROR, "语音合成发生错误: $lastErrorMsg")
-                    callbackForSys?.done()
+                    callbackForSys?.error()
                     callbackForSys = null
                     currentState = Dictionary.SpeechServiceState.PENDING
                     break
@@ -157,7 +161,7 @@ class SpeechService(private val context: Context) :
                 else -> {
                     // 未知状态，调用done()结束本次TTS作业
                     Log.w(LogTag.SPEECH_ERROR, "未知的语音合成状态: $currentState")
-                    callbackForSys?.done()
+                    callbackForSys?.error()
                     callbackForSys = null
                     currentState = Dictionary.SpeechServiceState.PENDING
                     break
@@ -185,6 +189,7 @@ class SpeechService(private val context: Context) :
         }
 
         currentState = Dictionary.SpeechServiceState.PROCESSING
+        isAudioAvailableStarted = null
 
         if (text.isNullOrBlank()) {
             currentState = Dictionary.SpeechServiceState.PENDING
@@ -280,9 +285,15 @@ class SpeechService(private val context: Context) :
 
         if (data != null && data.isNotEmpty() && dataLength > 0) {
             Log.d(LogTag.SPEECH_INFO, "待播放媒体数据实际长度: ${data.size}, 标记长度: $dataLength")
+
+            if (isAudioAvailableStarted == null || !isAudioAvailableStarted!!) {
+                //PCM音频参数为：单声道、24000Hz采样率、Float32采样点格式
+                callbackForSys!!.start(24000, AudioFormat.ENCODING_PCM_FLOAT, 1)
+                isAudioAvailableStarted = true
+            }
             
             // Android TTS系统对单次传递的音频数据大小有限制，需要分块处理
-            val maxChunkSize = 8192 // 8KB限制，避免缓冲区过大错误
+            val maxChunkSize = callbackForSys!!.maxBufferSize
             var offset = 0
             
             while (offset < dataLength) {
@@ -304,6 +315,7 @@ class SpeechService(private val context: Context) :
 
         if (isFinal) {
             Log.d(LogTag.SPEECH_INFO, "本次TTS作业完成")
+            isAudioAvailableStarted = null
             currentState = Dictionary.SpeechServiceState.PROCESSING_COMPLETED
         }
     }

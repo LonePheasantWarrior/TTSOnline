@@ -58,6 +58,7 @@ class TTSEngineService : TextToSpeechService() {
      */
     override fun onGetLanguage(): Array<String> {
         // 返回默认语言，这里返回中文简体
+        // zho-CHN
         return arrayOf("zh-CN")
     }
 

@@ -16,8 +16,6 @@
     <!-- TTS引擎需要的额外权限 -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <!-- TTS服务绑定权限 - 系统级权限，IDE警告可忽略 -->
-    <uses-permission android:name="android.permission.BIND_TTS_SERVICE" />
     <!-- 音频相关权限 -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <!-- 系统级权限 -->
@@ -59,7 +57,7 @@
             android:name=".function.TTSEngineService"
             android:exported="true"
             android:label="@string/tts_engine_name"
-            android:permission="android.permission.BIND_TTS_SERVICE"
+            android:permission="android.permission.BIND_IMS_SERVICE"
             android:process=":tts">
             <intent-filter>
                 <action android:name="android.intent.action.TTS_SERVICE" />
