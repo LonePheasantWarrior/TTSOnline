@@ -1,6 +1,5 @@
 package com.wxh.ttsonline.function
 
-import android.content.Context
 import android.speech.tts.SynthesisCallback
 import android.speech.tts.SynthesisRequest
 import android.speech.tts.TextToSpeech
