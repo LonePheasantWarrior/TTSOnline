@@ -18,6 +18,12 @@ class SpeechService(private val context: Context) :
     com.bytedance.speech.speechengine.SpeechEngine.SpeechListener {
 
     private val mainHandler = Handler(Looper.getMainLooper())
+    
+    /**
+     * 用于在原始TTS线程中执行系统回调的Handler
+     * 确保系统TTS回调在TTSEngineService.onSynthesizeText所在的线程中执行
+     */
+    private var ttsThreadHandler: Handler? = null
 
     val defaultText =
         "愿中国青年都摆脱冷气，只是向上走，不必听自暴自弃者流的话。能做事的做事，能发声的发声。有一分热，发一分光。就令萤火一般，也可以在黑暗里发一点光，不必等候炬火。此后如竟没有炬火：我便是唯一的光。"
@@ -62,7 +68,7 @@ class SpeechService(private val context: Context) :
             mainHandler.post {
                 Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
             }
-            ttsInner(defaultText, null, null)
+            ttsInner(text, null, null)
         } else {
             if (text.length > 80) {
                 lastErrorMsg = "待合成文本超长（80字符）"
@@ -87,6 +93,10 @@ class SpeechService(private val context: Context) :
             throw IllegalArgumentException(lastErrorMsg)
         }
         callbackForSys = callback
+        
+        // 保存当前线程的Handler，确保系统TTS回调在原始线程中执行
+        ttsThreadHandler = Handler(Looper.myLooper() ?: Looper.getMainLooper())
+        Log.d(LogTag.SDK_INFO, "保存TTS线程Handler，当前线程: ${Thread.currentThread().name}")
 
         if (request == null || request.charSequenceText.isNullOrBlank()) {
             currentState = Dictionary.SpeechServiceState.PENDING
@@ -116,7 +126,24 @@ class SpeechService(private val context: Context) :
             // 检查是否超时
             if (System.currentTimeMillis() - startTime > maxWaitTime) {
                 Log.w(LogTag.SPEECH_ERROR, "等待语音合成结果超时(${maxWaitTime}ms)")
-                callbackForSys?.error()
+                // 在原始TTS线程中调用error()
+                ttsThreadHandler?.post {
+                    try {
+                        Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.error()，线程: ${Thread.currentThread().name}")
+                        callbackForSys?.error()
+                    } catch (e: Exception) {
+                        Log.e(LogTag.SPEECH_ERROR, "在TTS线程中调用error()时发生异常: ${e.message}", e)
+                    }
+                } ?: run {
+                    // 回退到主线程
+                    mainHandler.post {
+                        try {
+                            callbackForSys?.error()
+                        } catch (e: Exception) {
+                            Log.e(LogTag.SPEECH_ERROR, "在主线程中调用error()时发生异常: ${e.message}", e)
+                        }
+                    }
+                }
                 callbackForSys = null
                 currentState = Dictionary.SpeechServiceState.PENDING
                 break
@@ -129,7 +156,24 @@ class SpeechService(private val context: Context) :
                         Thread.sleep(checkInterval)
                     } catch (_: InterruptedException) {
                         Log.w(LogTag.SPEECH_ERROR, "等待语音合成结果时被中断")
-                        callbackForSys?.done()
+                        // 在原始TTS线程中调用done()
+                        ttsThreadHandler?.post {
+                            try {
+                                Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.done()，线程: ${Thread.currentThread().name}")
+                                callbackForSys?.done()
+                            } catch (e: Exception) {
+                                Log.e(LogTag.SPEECH_ERROR, "在TTS线程中调用done()时发生异常: ${e.message}", e)
+                            }
+                        } ?: run {
+                            // 回退到主线程
+                            mainHandler.post {
+                                try {
+                                    callbackForSys?.done()
+                                } catch (e: Exception) {
+                                    Log.e(LogTag.SPEECH_ERROR, "在主线程中调用done()时发生异常: ${e.message}", e)
+                                }
+                            }
+                        }
                         callbackForSys = null
                         currentState = Dictionary.SpeechServiceState.PENDING
                         break
@@ -138,7 +182,24 @@ class SpeechService(private val context: Context) :
                 Dictionary.SpeechServiceState.PROCESSING_COMPLETED -> {
                     // 处理完成，调用done()结束本次TTS作业
                     Log.d(LogTag.SPEECH_INFO, "语音合成处理完成")
-                    callbackForSys?.done()
+                    // 在原始TTS线程中调用done()
+                    ttsThreadHandler?.post {
+                        try {
+                            Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.done()，线程: ${Thread.currentThread().name}")
+                            callbackForSys?.done()
+                        } catch (e: Exception) {
+                            Log.e(LogTag.SPEECH_ERROR, "在TTS线程中调用done()时发生异常: ${e.message}", e)
+                        }
+                    } ?: run {
+                        // 回退到主线程
+                        mainHandler.post {
+                            try {
+                                callbackForSys?.done()
+                            } catch (e: Exception) {
+                                Log.e(LogTag.SPEECH_ERROR, "在主线程中调用done()时发生异常: ${e.message}", e)
+                            }
+                        }
+                    }
                     callbackForSys = null
                     currentState = Dictionary.SpeechServiceState.PENDING
                     break
@@ -146,7 +207,24 @@ class SpeechService(private val context: Context) :
                 Dictionary.SpeechServiceState.ERROR -> {
                     // 发生错误，调用done()结束本次TTS作业
                     Log.e(LogTag.SPEECH_ERROR, "语音合成发生错误: $lastErrorMsg")
-                    callbackForSys?.error()
+                    // 在原始TTS线程中调用error()
+                    ttsThreadHandler?.post {
+                        try {
+                            Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.error()，线程: ${Thread.currentThread().name}")
+                            callbackForSys?.error()
+                        } catch (e: Exception) {
+                            Log.e(LogTag.SPEECH_ERROR, "在TTS线程中调用error()时发生异常: ${e.message}", e)
+                        }
+                    } ?: run {
+                        // 回退到主线程
+                        mainHandler.post {
+                            try {
+                                callbackForSys?.error()
+                            } catch (e: Exception) {
+                                Log.e(LogTag.SPEECH_ERROR, "在主线程中调用error()时发生异常: ${e.message}", e)
+                            }
+                        }
+                    }
                     callbackForSys = null
                     currentState = Dictionary.SpeechServiceState.PENDING
                     break
@@ -154,14 +232,48 @@ class SpeechService(private val context: Context) :
                 Dictionary.SpeechServiceState.PENDING -> {
                     // 已挂起，调用done()结束本次TTS作业
                     Log.d(LogTag.SPEECH_INFO, "语音合成状态为挂起")
-                    callbackForSys?.done()
+                    // 在原始TTS线程中调用done()
+                    ttsThreadHandler?.post {
+                        try {
+                            Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.done()，线程: ${Thread.currentThread().name}")
+                            callbackForSys?.done()
+                        } catch (e: Exception) {
+                            Log.e(LogTag.SPEECH_ERROR, "在TTS线程中调用done()时发生异常: ${e.message}", e)
+                        }
+                    } ?: run {
+                        // 回退到主线程
+                        mainHandler.post {
+                            try {
+                                callbackForSys?.done()
+                            } catch (e: Exception) {
+                                Log.e(LogTag.SPEECH_ERROR, "在主线程中调用done()时发生异常: ${e.message}", e)
+                            }
+                        }
+                    }
                     callbackForSys = null
                     break
                 }
                 else -> {
                     // 未知状态，调用done()结束本次TTS作业
                     Log.w(LogTag.SPEECH_ERROR, "未知的语音合成状态: $currentState")
-                    callbackForSys?.error()
+                    // 在原始TTS线程中调用error()
+                    ttsThreadHandler?.post {
+                        try {
+                            Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.error()，线程: ${Thread.currentThread().name}")
+                            callbackForSys?.error()
+                        } catch (e: Exception) {
+                            Log.e(LogTag.SPEECH_ERROR, "在TTS线程中调用error()时发生异常: ${e.message}", e)
+                        }
+                    } ?: run {
+                        // 回退到主线程
+                        mainHandler.post {
+                            try {
+                                callbackForSys?.error()
+                            } catch (e: Exception) {
+                                Log.e(LogTag.SPEECH_ERROR, "在主线程中调用error()时发生异常: ${e.message}", e)
+                            }
+                        }
+                    }
                     callbackForSys = null
                     currentState = Dictionary.SpeechServiceState.PENDING
                     break
@@ -286,37 +398,104 @@ class SpeechService(private val context: Context) :
         if (data != null && data.isNotEmpty() && dataLength > 0) {
             Log.d(LogTag.SPEECH_INFO, "待播放媒体数据实际长度: ${data.size}, 标记长度: $dataLength")
 
-            if (isAudioAvailableStarted == null || !isAudioAvailableStarted!!) {
-                //PCM音频参数为：单声道、24000Hz采样率、Float32采样点格式
-                callbackForSys!!.start(24000, AudioFormat.ENCODING_PCM_FLOAT, 1)
-                isAudioAvailableStarted = true
-            }
-            
-            // Android TTS系统对单次传递的音频数据大小有限制，需要分块处理
-            val maxChunkSize = callbackForSys!!.maxBufferSize
-            var offset = 0
-            
-            while (offset < dataLength) {
-                val chunkSize = minOf(maxChunkSize, dataLength - offset)
+            // 使用保存的Handler在原始TTS线程中执行系统回调
+            ttsThreadHandler?.post {
                 try {
-                    callbackForSys!!.audioAvailable(data, offset, chunkSize)
-                    offset += chunkSize
-                } catch (e: IllegalArgumentException) {
-                    Log.e(LogTag.SPEECH_ERROR, "audioAvailable调用失败: ${e.message}")
-                    lastErrorMsg = "音频数据处理失败: ${e.message}"
+                    if (isAudioAvailableStarted == null || !isAudioAvailableStarted!!) {
+                        //PCM音频参数为：单声道、1600Hz采样率、Float32采样点格式
+                        Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.start()，线程: ${Thread.currentThread().name}")
+                        callbackForSys!!.start(1600, AudioFormat.ENCODING_PCM_16BIT, 1)
+                        isAudioAvailableStarted = true
+                    }
+                    
+                    // Android TTS系统对单次传递的音频数据大小有限制，需要分块处理
+                    val maxChunkSize = callbackForSys!!.maxBufferSize
+                    var offset = 0
+                    
+                    while (offset < dataLength) {
+                        val chunkSize = minOf(maxChunkSize, dataLength - offset)
+                        try {
+                            callbackForSys!!.audioAvailable(data, offset, chunkSize)
+                            offset += chunkSize
+                        } catch (e: IllegalArgumentException) {
+                            Log.e(LogTag.SPEECH_ERROR, "audioAvailable调用失败: ${e.message}")
+                            lastErrorMsg = "音频数据处理失败: ${e.message}"
+                            mainHandler.post {
+                                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                            }
+                            currentState = Dictionary.SpeechServiceState.ERROR
+                            return@post
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e(LogTag.SPEECH_ERROR, "在TTS线程中执行系统回调时发生异常: ${e.message}", e)
+                    lastErrorMsg = "系统TTS回调执行失败: ${e.message}"
                     mainHandler.post {
                         Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
                     }
                     currentState = Dictionary.SpeechServiceState.ERROR
-                    return
+                }
+            } ?: run {
+                // 如果没有保存的Handler，回退到主线程执行
+                Log.w(LogTag.SPEECH_ERROR, "未找到TTS线程Handler，回退到主线程执行系统回调")
+                mainHandler.post {
+                    try {
+                        if (isAudioAvailableStarted == null || !isAudioAvailableStarted!!) {
+                            callbackForSys!!.start(24000, AudioFormat.ENCODING_PCM_FLOAT, 1)
+                            isAudioAvailableStarted = true
+                        }
+                        
+                        val maxChunkSize = callbackForSys!!.maxBufferSize
+                        var offset = 0
+                        
+                        while (offset < dataLength) {
+                            val chunkSize = minOf(maxChunkSize, dataLength - offset)
+                            try {
+                                callbackForSys!!.audioAvailable(data, offset, chunkSize)
+                                offset += chunkSize
+                            } catch (e: IllegalArgumentException) {
+                                Log.e(LogTag.SPEECH_ERROR, "audioAvailable调用失败: ${e.message}")
+                                lastErrorMsg = "音频数据处理失败: ${e.message}"
+                                Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                                currentState = Dictionary.SpeechServiceState.ERROR
+                                return@post
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(LogTag.SPEECH_ERROR, "在主线程中执行系统回调时发生异常: ${e.message}", e)
+                        lastErrorMsg = "系统TTS回调执行失败: ${e.message}"
+                        Toast.makeText(context, lastErrorMsg, Toast.LENGTH_SHORT).show()
+                        currentState = Dictionary.SpeechServiceState.ERROR
+                    }
                 }
             }
         }
 
         if (isFinal) {
             Log.d(LogTag.SPEECH_INFO, "本次TTS作业完成")
+            // 在原始TTS线程中调用done()
+            ttsThreadHandler?.post {
+                try {
+                    Log.d(LogTag.SDK_INFO, "在TTS线程中调用callbackForSys.done()，线程: ${Thread.currentThread().name}")
+                    callbackForSys?.done()
+                } catch (e: Exception) {
+                    Log.e(LogTag.SPEECH_ERROR, "在TTS线程中调用done()时发生异常: ${e.message}", e)
+                }
+            } ?: run {
+                // 回退到主线程
+                mainHandler.post {
+                    try {
+                        callbackForSys?.done()
+                    } catch (e: Exception) {
+                        Log.e(LogTag.SPEECH_ERROR, "在主线程中调用done()时发生异常: ${e.message}", e)
+                    }
+                }
+            }
+            
             isAudioAvailableStarted = null
             currentState = Dictionary.SpeechServiceState.PROCESSING_COMPLETED
+            // 清理Handler引用
+            ttsThreadHandler = null
         }
     }
 
@@ -421,6 +600,8 @@ class SpeechService(private val context: Context) :
         speechEngine.destroy()
         callbackForSys = null
         currentState = Dictionary.SpeechServiceState.PENDING
+        // 清理Handler引用
+        ttsThreadHandler = null
     }
 
     companion object {
