@@ -14,4 +14,4 @@
 
 ## ETC
 一直在搞Java服务端开发,这是第一次用Kotlin来写工程,同样也是第一次写Android应用  
-中间遇到不少坑,比如无法将软件注册为系统TTS应用(“文字转语音输出”设置页中没有出现本软件),对`android.speech.tts.TextToSpeechService`不熟悉其`android.speech.tts.TextToSpeechService.onSynthesizeText`接口的实现逻辑**必须在一个线程中**等等 
+中间遇到不少坑,比如无法将软件注册为系统TTS应用(“文字转语音输出”设置页中没有出现本软件),对`android.speech.tts.TextToSpeechService`不熟悉,后来才知道`android.speech.tts.TextToSpeechService.onSynthesizeText`接口的实现逻辑**必须在一个线程中**等等 
